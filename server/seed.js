@@ -82,6 +82,27 @@ const getFoodItems = (restaurantId, name) => {
                 price: 350, category: 'Desserts', isVeg: true, rating: 4.6,
                 ingredients: ['Ice Cream', 'Oreo Cookies', 'Milk'],
             },
+            {
+                name: 'Vanilla Soft Serve Cone',
+                description: 'Classic creamy vanilla soft serve in a crisp cone',
+                image: '/images/food/mcd-ice-cream.png',
+                price: 150, category: 'Ice Cream', isVeg: true, rating: 4.8,
+                ingredients: ['Milk', 'Sugar', 'Vanilla', 'Wafer Cone'],
+            },
+            {
+                name: 'Medium Coca-Cola',
+                description: 'Chilled and refreshing Coca-Cola classic',
+                image: '/images/food/mcd-drinks.png',
+                price: 180, category: 'Drinks', isVeg: true, rating: 4.5,
+                ingredients: ['Carbonated Water', 'Sugar', 'Caffeine'],
+            },
+            {
+                name: 'Hot Apple Pie',
+                description: 'Crispy pastry with a warm, cinnamon apple filling',
+                image: '/images/food/mcd-desserts.png',
+                price: 250, category: 'Desserts', isVeg: true, rating: 4.7,
+                ingredients: ['Apples', 'Cinnamon', 'Wheat Flour', 'Sugar'],
+            },
         ],
         'KFC': [
             {
@@ -111,6 +132,27 @@ const getFoodItems = (restaurantId, name) => {
                 image: IMG('1554866585-cd94860890b7'),        // Soft drink
                 price: 149, category: 'Drinks', isVeg: true, rating: 4.0,
                 ingredients: ['Pepsi', 'Ice'],
+            },
+            {
+                name: 'Oreo Krusher',
+                description: 'Thick and creamy milkshake with crushed Oreo pieces',
+                image: '/images/food/kfc-ice-cream.png',
+                price: 450, category: 'Ice Cream', isVeg: true, rating: 4.9,
+                ingredients: ['Milk', 'Ice Cream', 'Oreo Cookies'],
+            },
+            {
+                name: 'Mirinda Orange',
+                description: 'Refreshing tangy orange flavored soda',
+                image: '/images/food/kfc-drinks.png',
+                price: 149, category: 'Drinks', isVeg: true, rating: 4.4,
+                ingredients: ['Carbonated Water', 'Orange Flavor', 'Sugar'],
+            },
+            {
+                name: 'Chocolate Lava Cake',
+                description: 'Warm chocolate cake with a molten chocolate center',
+                image: '/images/food/kfc-desserts.png',
+                price: 320, category: 'Desserts', isVeg: true, rating: 4.8,
+                ingredients: ['Dark Chocolate', 'Butter', 'Eggs', 'Sugar'],
             },
         ],
         'Pizza Hut': [

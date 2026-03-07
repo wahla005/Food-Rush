@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const FoodItem = require('../models/FoodItem');
+const Restaurant = require('../models/Restaurant');
 const Order = require('../models/Order');
 const { protect } = require('../middleware/auth');
 
@@ -18,10 +19,13 @@ router.post('/', protect, async (req, res) => {
             return res.status(403).json({ message: 'Your account is blocked from placing orders due to multiple non-received deliveries.' });
         }
 
-        // 1. Check first-order status for delivery fee validation
+        // 1. Fetch restaurant data and check first-order status for delivery fee validation
+        const restaurantData = await Restaurant.findById(restaurant);
+        if (!restaurantData) return res.status(404).json({ message: 'Restaurant not found' });
+
         const pastOrders = await Order.countDocuments({ user: req.user._id });
         const isFirstOrder = pastOrders === 0;
-        const expectedDeliveryFee = isFirstOrder ? 0 : BASE_DELIVERY_FEE;
+        const expectedDeliveryFee = isFirstOrder ? 0 : (restaurantData.deliveryFee ?? BASE_DELIVERY_FEE);
 
         // 2. Validate items and recalculate subtotal
         let validatedSubtotal = 0;
@@ -53,6 +57,13 @@ router.post('/', protect, async (req, res) => {
         }
 
         const validatedTotal = validatedSubtotal + expectedDeliveryFee;
+
+        // NEW: Check minimum order amount
+        if (validatedSubtotal < restaurantData.minOrder) {
+            return res.status(400).json({
+                message: `Minimum order amount for ${restaurantName} is Rs. ${restaurantData.minOrder}. Please add more items.`
+            });
+        }
 
         const order = await Order.create({
             user: req.user._id,

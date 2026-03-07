@@ -22,12 +22,14 @@ const AdminDashboard = () => {
     const [showAddCategory, setShowAddCategory] = useState(false);
     const [showEditFood, setShowEditFood] = useState(false);
     const [showEditCategory, setShowEditCategory] = useState(false);
+    const [showEditRestaurant, setShowEditRestaurant] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [newFood, setNewFood] = useState({ name: '', description: '', image: '', price: '', category: '', isVeg: false, restaurant: '' });
     const [newRestaurant, setNewRestaurant] = useState({ name: '', image: '', cuisine: '', deliveryTime: '30-45 min', minOrder: 200, deliveryFee: 50, description: '' });
     const [newCategory, setNewCategory] = useState({ name: '', image: '' });
     const [editingFood, setEditingFood] = useState(null);
     const [editingCategory, setEditingCategory] = useState(null);
+    const [editingRestaurant, setEditingRestaurant] = useState(null);
     const [discountValues, setDiscountValues] = useState({});
 
     useEffect(() => { loadData(); }, [tab]);
@@ -136,6 +138,24 @@ const AdminDashboard = () => {
             setRestaurants(prev => prev.filter(r => r._id !== id));
             toast.success('Restaurant deleted');
         } catch { toast.error('Failed to delete'); }
+    };
+
+    const updateRestaurant = async (e) => {
+        e.preventDefault();
+        try {
+            const cuisineValue = Array.isArray(editingRestaurant.cuisine)
+                ? editingRestaurant.cuisine
+                : editingRestaurant.cuisine.split(',').map(c => c.trim());
+
+            const { data } = await API.put(`/admin/restaurants/${editingRestaurant._id}`, {
+                ...editingRestaurant,
+                cuisine: cuisineValue
+            });
+            setRestaurants(prev => prev.map(r => r._id === data._id ? data : r));
+            setShowEditRestaurant(false);
+            setEditingRestaurant(null);
+            toast.success('Restaurant updated');
+        } catch { toast.error('Failed to update'); }
     };
 
     const addCategory = async (e) => {
@@ -512,6 +532,9 @@ const AdminDashboard = () => {
                                             <input className="input-field" placeholder="Delivery Time (e.g. 20-30 min)" value={newRestaurant.deliveryTime} onChange={e => setNewRestaurant(r => ({ ...r, deliveryTime: e.target.value }))} />
                                             <input className="input-field" placeholder="Min Order (Rs.)" type="number" value={newRestaurant.minOrder} onChange={e => setNewRestaurant(r => ({ ...r, minOrder: e.target.value }))} />
                                         </div>
+                                        <div className="form-row">
+                                            <input className="input-field" placeholder="Delivery Fee (Rs.)" type="number" value={newRestaurant.deliveryFee} onChange={e => setNewRestaurant(r => ({ ...r, deliveryFee: e.target.value }))} />
+                                        </div>
                                         <button type="submit" className="btn-orange" disabled={uploading}>
                                             {uploading ? 'Uploading Image...' : 'Add Restaurant'}
                                         </button>
@@ -519,6 +542,40 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         )}
+
+                        {showEditRestaurant && editingRestaurant && (
+                            <div className="modal-overlay">
+                                <div className="modal-card">
+                                    <div className="modal-header">
+                                        <h3>Edit Restaurant</h3>
+                                        <button onClick={() => { setShowEditRestaurant(false); setEditingRestaurant(null); }}><FiX /></button>
+                                    </div>
+                                    <form onSubmit={updateRestaurant} className="auth-form">
+                                        <input className="input-field" placeholder="Restaurant Name" value={editingRestaurant.name} onChange={e => setEditingRestaurant(r => ({ ...r, name: e.target.value }))} required />
+                                        <input className="input-field" placeholder="Cuisine (comma separated)" value={Array.isArray(editingRestaurant.cuisine) ? editingRestaurant.cuisine.join(', ') : editingRestaurant.cuisine} onChange={e => setEditingRestaurant(r => ({ ...r, cuisine: e.target.value }))} required />
+                                        <input className="input-field" placeholder="Description" value={editingRestaurant.description} onChange={e => setEditingRestaurant(r => ({ ...r, description: e.target.value }))} />
+
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <label className="input-label" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>Restaurant Banner (Upload or URL)</label>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setEditingRestaurant)} style={{ marginBottom: '0.5rem', display: 'block', width: '100%', fontSize: '0.8rem' }} />
+                                            <input className="input-field" placeholder="Or Image URL" value={editingRestaurant.image} onChange={e => setEditingRestaurant(r => ({ ...r, image: e.target.value }))} required />
+                                        </div>
+
+                                        <div className="form-row">
+                                            <input className="input-field" placeholder="Delivery Time" value={editingRestaurant.deliveryTime} onChange={e => setEditingRestaurant(r => ({ ...r, deliveryTime: e.target.value }))} />
+                                            <input className="input-field" placeholder="Min Order" type="number" value={editingRestaurant.minOrder} onChange={e => setEditingRestaurant(r => ({ ...r, minOrder: e.target.value }))} />
+                                        </div>
+                                        <div className="form-row">
+                                            <input className="input-field" placeholder="Delivery Fee" type="number" value={editingRestaurant.deliveryFee} onChange={e => setEditingRestaurant(r => ({ ...r, deliveryFee: e.target.value }))} />
+                                        </div>
+                                        <button type="submit" className="btn-orange" disabled={uploading}>
+                                            {uploading ? 'Uploading Image...' : 'Update Restaurant'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+
 
                         <div className="admin-table-wrap">
                             <table className="admin-table">
@@ -560,7 +617,10 @@ const AdminDashboard = () => {
                                                 </button>
                                             </td>
                                             <td>
-                                                <button className="icon-btn danger" onClick={() => deleteRestaurant(r._id)}><FiTrash2 /></button>
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <button className="icon-btn edit" onClick={() => { setEditingRestaurant(r); setShowEditRestaurant(true); }}><FiEdit /></button>
+                                                    <button className="icon-btn danger" onClick={() => deleteRestaurant(r._id)}><FiTrash2 /></button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

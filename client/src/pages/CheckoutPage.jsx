@@ -26,6 +26,8 @@ const CheckoutPage = () => {
 
     const [loading, setLoading] = useState(false);
     const [isFirstOrder, setIsFirstOrder] = useState(false);
+    const [minOrder, setMinOrder] = useState(0);
+    const [restDeliveryFee, setRestDeliveryFee] = useState(BASE_DELIVERY_FEE);
     const [promoLoading, setPromoLoading] = useState(true);
 
     const [form, setForm] = useState({
@@ -35,6 +37,11 @@ const CheckoutPage = () => {
         city: '',
         paymentMethod: 'COD',
     });
+
+    // ── Decide what items to checkout ──────────────────────────────────────────
+    const itemsToProcess = directItem ? [directItem] : cart;
+    const checkoutRestId = directItem ? directItem.restaurantId : cartRestId;
+    const checkoutRestName = directItem ? directItem.restaurantName : cartRestName;
 
     // ── Check first-order status ──────────────────────────────────────────
     useEffect(() => {
@@ -49,12 +56,20 @@ const CheckoutPage = () => {
             }
         };
         checkFirstOrder();
-    }, []);
 
-    // ── Decide what items to checkout ──────────────────────────────────────────
-    const itemsToProcess = directItem ? [directItem] : cart;
-    const checkoutRestId = directItem ? directItem.restaurantId : cartRestId;
-    const checkoutRestName = directItem ? directItem.restaurantName : cartRestName;
+        // NEW: Fetch restaurant minOrder
+        const fetchMinOrder = async () => {
+            if (!checkoutRestId) return;
+            try {
+                const { data } = await API.get(`/restaurants/${checkoutRestId}`);
+                setMinOrder(data.restaurant?.minOrder || 0);
+                setRestDeliveryFee(data.restaurant?.deliveryFee ?? BASE_DELIVERY_FEE);
+            } catch (err) {
+                console.error('Failed to fetch minOrder', err);
+            }
+        };
+        fetchMinOrder();
+    }, [checkoutRestId]);
 
     // ── Compute per-item final prices (admin discount + Pizza promo stacked) ──
     const enrichedCart = itemsToProcess.map(item => {
@@ -64,7 +79,7 @@ const CheckoutPage = () => {
     });
 
     const subtotal = enrichedCart.reduce((s, i) => s + i.finalPrice * i.quantity, 0);
-    const deliveryFee = isFirstOrder ? 0 : BASE_DELIVERY_FEE;
+    const deliveryFee = isFirstOrder ? 0 : restDeliveryFee;
     const grandTotal = subtotal + deliveryFee;
 
     // ── Count active promos for display ──────────────────────────────────
@@ -142,6 +157,15 @@ const CheckoutPage = () => {
                     </div>
                 )}
 
+                {/* ── Minimum Order Warning ── */}
+                {subtotal < minOrder && (
+                    <div className="promo-banner promo-red" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', marginBottom: '1.5rem' }}>
+                        ⚠️ <strong>Minimum Order Required:</strong> The minimum order amount for {checkoutRestName} is Rs. {minOrder}.
+                        Current subtotal: <strong>Rs. {subtotal}</strong>.
+                        Please add <strong>Rs. {minOrder - subtotal}</strong> more worth of items to proceed.
+                    </div>
+                )}
+
                 <div className="checkout-layout">
                     {/* Form */}
                     <form onSubmit={handleOrder} className="checkout-form">
@@ -174,10 +198,10 @@ const CheckoutPage = () => {
                         <button
                             type="submit"
                             className="btn-orange"
-                            style={{ width: '100%', marginTop: '1.5rem' }}
-                            disabled={loading || promoLoading}
+                            style={{ width: '100%', marginTop: '1.5rem', opacity: (subtotal < minOrder) ? 0.6 : 1, cursor: (subtotal < minOrder) ? 'not-allowed' : 'pointer' }}
+                            disabled={loading || promoLoading || (subtotal < minOrder)}
                         >
-                            {loading ? 'Placing Order...' : `Place Order — Rs. ${grandTotal}`}
+                            {loading ? 'Placing Order...' : (subtotal < minOrder) ? `Minimum Rs. ${minOrder} Required` : `Place Order — Rs. ${grandTotal}`}
                         </button>
                     </form>
 

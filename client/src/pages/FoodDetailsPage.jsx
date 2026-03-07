@@ -105,9 +105,27 @@ const FoodDetailsPage = () => {
                                 <span>{qty}</span>
                                 <button onClick={() => setQty(q => q + 1)}><FiPlus /></button>
                             </div>
-                            <button className="btn-orange" onClick={handleAddToCart}>
-                                Add to Cart — Rs. {effectivePrice * qty}
-                            </button>
+                            <div className="food-detail-buttons">
+                                <button
+                                    className="btn-orange"
+                                    style={{ flex: 1 }}
+                                    onClick={() => navigate('/checkout', {
+                                        state: {
+                                            directItem: {
+                                                ...food,
+                                                quantity: qty,
+                                                restaurantId: food.restaurant?._id || food.restaurant,
+                                                restaurantName: food.restaurant?.name || ''
+                                            }
+                                        }
+                                    })}
+                                >
+                                    Buy Now — Rs. {effectivePrice * qty}
+                                </button>
+                                <button className="btn-add-cart-outline" onClick={handleAddToCart}>
+                                    Add to Cart
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

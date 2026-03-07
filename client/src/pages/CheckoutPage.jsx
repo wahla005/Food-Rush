@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,7 +16,10 @@ import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
 const BASE_DELIVERY_FEE = 59;
 
 const CheckoutPage = () => {
-    const { cart, total, clearCart, restaurantId, restaurantName } = useCart();
+    const location = useLocation();
+    const directItem = location.state?.directItem;
+
+    const { cart, total, clearCart, restaurantId: cartRestId, restaurantName: cartRestName } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
     const orderPlaced = React.useRef(false);
@@ -48,8 +51,13 @@ const CheckoutPage = () => {
         checkFirstOrder();
     }, []);
 
+    // ── Decide what items to checkout ──────────────────────────────────────────
+    const itemsToProcess = directItem ? [directItem] : cart;
+    const checkoutRestId = directItem ? directItem.restaurantId : cartRestId;
+    const checkoutRestName = directItem ? directItem.restaurantName : cartRestName;
+
     // ── Compute per-item final prices (admin discount + Pizza promo stacked) ──
-    const enrichedCart = cart.map(item => {
+    const enrichedCart = itemsToProcess.map(item => {
         const finalPrice = getPromoPrice(item);
         const hasPizzaPromoActive = hasPizzaPromo(item);
         return { ...item, finalPrice, hasPizzaPromo: hasPizzaPromoActive };
@@ -80,8 +88,8 @@ const CheckoutPage = () => {
             }));
 
             const { data } = await API.post('/orders', {
-                restaurant: restaurantId,
-                restaurantName,
+                restaurant: checkoutRestId,
+                restaurantName: checkoutRestName,
                 items,
                 subtotal,
                 deliveryFee,
@@ -98,17 +106,18 @@ const CheckoutPage = () => {
             clearCart();
             navigate('/order-confirmation', { state: { order: data } });
         } catch (err) {
-            toast.error('Failed to place order');
+            const msg = err.response?.data?.message || 'Failed to place order';
+            toast.error(msg, { duration: 5000 });
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        if (cart.length === 0 && !orderPlaced.current) navigate('/cart');
-    }, [cart.length]);
+        if (!directItem && cart.length === 0 && !orderPlaced.current) navigate('/cart');
+    }, [cart.length, directItem]);
 
-    if (cart.length === 0 && !orderPlaced.current) return null;
+    if (!directItem && cart.length === 0 && !orderPlaced.current) return null;
 
     return (
         <div className="app-page">

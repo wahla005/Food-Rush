@@ -278,26 +278,138 @@ img {
 .btn-orange {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   background: var(--orange);
   color: white;
-  border: none;
+  border: 1.5px solid transparent;
+  /* Unified border for equal sizing */
   padding: 0.75rem 1.5rem;
   border-radius: 50px;
   font-size: 0.95rem;
   font-weight: 700;
   font-family: 'Inter', sans-serif;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
 }
 
 .btn-orange:hover {
   background: var(--orange-dark);
-  transform: translateY(-1px);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2);
 }
 
 .btn-orange:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-buy-now {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: #1a1a1a;
+  color: white;
+  border: 1.5px solid transparent;
+  /* Unified border for equal sizing */
+  padding: 0.75rem 1rem;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.btn-buy-now:hover {
+  background: #333;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-add-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orange-light);
+  color: var(--orange);
+  border: 1.5px solid transparent;
+  padding: 0.75rem 1rem;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  flex: 1;
+}
+
+.btn-add-cart:hover {
+  background: #fde4d8;
+  border-color: var(--orange);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.15);
+}
+
+.food-card-buttons {
+  display: flex;
+  flex-direction: column;
+  /* Reverted to stacked */
+  gap: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.food-card-buttons button {
+  flex: 1 !important;
+  height: 48px !important;
+  font-size: 0.95rem !important;
+  justify-content: center;
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+
+.food-detail-buttons {
+  display: flex;
+  flex-direction: column;
+  /* Reverted to stacked */
+  gap: 0.8rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.food-detail-buttons button {
+  flex: 1 !important;
+  font-size: 1.25rem !important;
+  padding: 0.85rem 1rem !important;
+  height: 72px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800 !important;
+  border-radius: 12px !important;
+}
+
+.btn-add-cart-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--dark);
+  border: 1.5px solid var(--border);
+  padding: 0.85rem 1.75rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.btn-add-cart-outline:hover {
+  border-color: var(--dark);
+  background: var(--light-gray);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 .btn-orange-outline {
@@ -848,34 +960,53 @@ img {
 /* ── Category grid ── */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1rem;
 }
 
-.category-chip {
+.category-card-small {
   background: var(--white);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1rem 0.5rem;
+  padding: 1.1rem 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--dark);
-  transition: all 0.2s;
+  gap: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.category-chip:hover {
+.category-card-small:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
   border-color: var(--orange);
-  color: var(--orange);
-  background: var(--orange-light);
-  transform: translateY(-2px);
 }
 
-.cat-emoji {
-  font-size: 1.6rem;
+.cat-img-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--orange-light);
+  border: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.category-card-small:hover .cat-img-wrap {
+  border-color: var(--orange);
+  transform: scale(1.05);
+}
+
+.cat-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cat-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--dark);
 }
 
 /* ── Offer banner ── */

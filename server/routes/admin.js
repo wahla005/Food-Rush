@@ -5,7 +5,29 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const FoodItem = require('../models/FoodItem');
 const Restaurant = require('../models/Restaurant');
+const Category = require('../models/Category');
 const { adminProtect, ADMIN_JWT_SECRET } = require('../middleware/adminAuth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// ─────────────────────────────────────────────
+// Multer Configuration for Gallery Uploads
+// ─────────────────────────────────────────────
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = 'uploads/';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage });
 
 // ─────────────────────────────────────────────
 // Hardcoded admin credentials
@@ -39,7 +61,19 @@ router.get('/orders', adminProtect, async (req, res) => {
 // PUT /api/admin/orders/:id
 router.put('/orders/:id', adminProtect, async (req, res) => {
     try {
-        const order = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+        const { status } = req.body;
+        const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+
+        // NEW: Automatic Blocking Logic
+        if (status === 'Not Received') {
+            const userId = order.user;
+            const notReceivedCount = await Order.countDocuments({ user: userId, status: 'Not Received' });
+
+            if (notReceivedCount >= 3) {
+                await User.findByIdAndUpdate(userId, { isBlocked: true });
+            }
+        }
+
         res.json(order);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
@@ -49,8 +83,29 @@ router.put('/orders/:id', adminProtect, async (req, res) => {
 // GET /api/admin/users
 router.get('/users', adminProtect, async (req, res) => {
     try {
-        const users = await User.find().select('-password').sort({ createdAt: -1 });
-        res.json(users);
+        const users = await User.find().select('-password').sort({ createdAt: -1 }).lean();
+
+        // Enhance each user with their "Not Received" order count
+        const enhancedUsers = await Promise.all(users.map(async (u) => {
+            const notReceivedCount = await Order.countDocuments({ user: u._id, status: 'Not Received' });
+            return { ...u, notReceivedCount };
+        }));
+
+        res.json(enhancedUsers);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/admin/users/:id/block
+router.put('/users/:id/block', adminProtect, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        user.isBlocked = !user.isBlocked;
+        await user.save();
+        res.json(user);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -110,19 +165,82 @@ router.put('/restaurants/:id', adminProtect, async (req, res) => {
 // GET /api/admin/stats
 router.get('/stats', adminProtect, async (req, res) => {
     try {
-        const [totalOrders, totalUsers, totalFoods, totalRevenue] = await Promise.all([
+        const [totalOrders, totalUsers, totalFoods, totalCategories, totalRevenue] = await Promise.all([
             Order.countDocuments(),
             User.countDocuments(),
             FoodItem.countDocuments(),
+            Category.countDocuments(),
             Order.aggregate([{ $group: { _id: null, total: { $sum: '$total' } } }]),
         ]);
         res.json({
             totalOrders,
             totalUsers,
             totalFoods,
+            totalCategories,
             totalRevenue: totalRevenue[0]?.total || 0,
         });
     } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// ─────────────────────────────────────────────
+// Image Upload Route
+// ─────────────────────────────────────────────
+router.post('/upload', adminProtect, upload.single('image'), (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const filePath = `/uploads/${req.file.filename}`;
+    res.json({ url: filePath });
+});
+
+// DELETE /api/admin/restaurants/:id
+router.delete('/restaurants/:id', adminProtect, async (req, res) => {
+    try {
+        await Restaurant.findByIdAndDelete(req.params.id);
+        // Also delete foods belonging to this restaurant
+        await FoodItem.deleteMany({ restaurant: req.params.id });
+        res.json({ message: 'Restaurant and its food items deleted' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Category Management
+
+// POST /api/admin/categories
+router.post('/categories', adminProtect, async (req, res) => {
+    try {
+        const { name, image } = req.body;
+        const category = await Category.create({ name, image });
+        res.status(201).json(category);
+    } catch (err) {
+        if (err.code === 11000) return res.status(400).json({ message: 'Category already exists' });
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// DELETE /api/admin/categories/:id
+router.delete('/categories/:id', adminProtect, async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id);
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Category deleted' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/admin/categories/:id
+router.put('/categories/:id', adminProtect, async (req, res) => {
+    try {
+        const { name, image } = req.body;
+        const category = await Category.findByIdAndUpdate(req.params.id, { name, image }, { new: true });
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+        res.json(category);
+    } catch (err) {
+        if (err.code === 11000) return res.status(400).json({ message: 'Category name already exists' });
         res.status(500).json({ message: 'Server error' });
     }
 });

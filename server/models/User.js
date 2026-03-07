@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    isBlocked: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true });
 
 // Hash password before save — skip if no password (Google OAuth users)

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { FiStar, FiFilter } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
@@ -7,11 +7,12 @@ import API from '../api/axios';
 
 import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
 
-const CATEGORIES = ['All', 'Burgers', 'Pizza', 'Desi', 'Chinese', 'BBQ', 'Fried Chicken', 'Desserts', 'Drinks', 'Sides', 'Starters', 'Bread'];
 
 const MenuPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [foods, setFoods] = useState([]);
+    const [categories, setCategories] = useState(['All']);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || 'All');
     const [sort, setSort] = useState('');
@@ -36,7 +37,19 @@ const MenuPage = () => {
         }
     };
 
-    useEffect(() => { fetchFoods(); }, [activeCategory, sort, vegOnly, searchParams]);
+    const fetchCategories = async () => {
+        try {
+            const { data } = await API.get('/categories');
+            setCategories(['All', ...data.map(c => c.name)]);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchFoods();
+        fetchCategories();
+    }, [activeCategory, sort, vegOnly, searchParams]);
 
     return (
         <div className="app-page">
@@ -68,7 +81,7 @@ const MenuPage = () => {
 
                 {/* Category tabs */}
                 <div className="category-tabs">
-                    {CATEGORIES.map(c => (
+                    {categories.map(c => (
                         <button
                             key={c}
                             className={`cat-tab ${activeCategory === c ? 'cat-tab-active' : ''}`}
@@ -136,12 +149,29 @@ const MenuPage = () => {
                                             )}
                                             <span className="food-rating"><FiStar size={12} /> {f.rating}</span>
                                         </div>
-                                        <button
-                                            className="btn-add-cart"
-                                            onClick={() => addToCart(f, f.restaurant?._id || f.restaurant, f.restaurant?.name)}
-                                        >
-                                            + Add to Cart
-                                        </button>
+                                        <div className="food-card-buttons">
+                                            <button
+                                                className="btn-buy-now"
+                                                onClick={() => navigate('/checkout', {
+                                                    state: {
+                                                        directItem: {
+                                                            ...f,
+                                                            quantity: 1,
+                                                            restaurantId: f.restaurant?._id || f.restaurant,
+                                                            restaurantName: f.restaurant?.name || ''
+                                                        }
+                                                    }
+                                                })}
+                                            >
+                                                Buy Now
+                                            </button>
+                                            <button
+                                                className="btn-add-cart"
+                                                onClick={() => addToCart(f, f.restaurant?._id || f.restaurant, f.restaurant?.name)}
+                                            >
+                                                + Cart
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             );

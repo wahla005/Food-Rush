@@ -4,34 +4,25 @@ import { FiStar, FiClock, FiArrowRight, FiTruck } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
-
-const CATEGORIES = [
-    { name: 'Burgers', emoji: '🍔' },
-    { name: 'Pizza', emoji: '🍕' },
-    { name: 'Desi', emoji: '🍛' },
-    { name: 'Chinese', emoji: '🥡' },
-    { name: 'BBQ', emoji: '🔥' },
-    { name: 'Desserts', emoji: '🍦' },
-    { name: 'Drinks', emoji: '🥤' },
-    { name: 'Sides', emoji: '🍟' },
-];
-
 const HomePage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [restaurants, setRestaurants] = useState([]);
     const [featured, setFeatured] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [rRes, fRes] = await Promise.all([
+                const [rRes, fRes, cRes] = await Promise.all([
                     API.get('/restaurants'),
                     API.get('/foods?sort=rating'),
+                    API.get('/categories'),
                 ]);
                 setRestaurants(rRes.data.slice(0, 4));
                 setFeatured(fRes.data.slice(0, 6));
+                setCategories(cRes.data);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -71,11 +62,13 @@ const HomePage = () => {
                 <section className="section">
                     <h2 className="section-title">Browse by Category</h2>
                     <div className="category-grid">
-                        {CATEGORIES.map(c => (
-                            <button key={c.name} className="category-chip"
+                        {categories.map(c => (
+                            <button key={c._id || c.name} className="category-card-small"
                                 onClick={() => navigate(`/menu?category=${c.name}`)}>
-                                <span className="cat-emoji">{c.emoji}</span>
-                                <span>{c.name}</span>
+                                <div className="cat-img-wrap">
+                                    <img src={c.image} alt={c.name} />
+                                </div>
+                                <span className="cat-name">{c.name}</span>
                             </button>
                         ))}
                     </div>

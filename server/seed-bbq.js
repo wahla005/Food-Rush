@@ -31,7 +31,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/foodapp')
                 restaurant: res._id,
                 name: 'Mega BBQ Feast',
                 description: 'A huge platter for the whole family',
-                image: 'https://images.unsplash.com/photo-1544025162-d76694265947',
+                image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&h=350&fit=crop',
                 price: 2500,
                 category: 'BBQ',
                 inStock: true
@@ -40,7 +40,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/foodapp')
                 restaurant: res._id,
                 name: 'Pizza Margherita',
                 description: 'Classic pizza',
-                image: 'https://images.unsplash.com/photo-1574129330623-df46bfc06c11',
+                image: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=500&h=350&fit=crop',
                 price: 1200,
                 category: 'Pizza',
                 inStock: true

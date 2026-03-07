@@ -1,12 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
 const foodRoutes = require('./routes/foods');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const categoryRoutes = require('./routes/categories');
 
 connectDB();
 
@@ -22,12 +24,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Static folder for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/foods', foodRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.get('/', (req, res) => res.json({ message: '✅ FoodApp API Running' }));
 

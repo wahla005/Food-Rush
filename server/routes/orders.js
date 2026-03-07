@@ -12,6 +12,12 @@ router.post('/', protect, async (req, res) => {
     try {
         const { restaurantName, items: incomingItems, deliveryAddress, paymentMethod, restaurant } = req.body;
 
+        // NEW: Check if user is blocked
+        const user = await req.user.constructor.findById(req.user._id);
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account is blocked from placing orders due to multiple non-received deliveries.' });
+        }
+
         // 1. Check first-order status for delivery fee validation
         const pastOrders = await Order.countDocuments({ user: req.user._id });
         const isFirstOrder = pastOrders === 0;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FiStar, FiClock, FiTruck } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
@@ -12,6 +12,7 @@ const RestaurantPage = () => {
     const [data, setData] = useState(null);
     const [activeCategory, setActiveCategory] = useState('All');
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
     const { addToCart } = useCart();
 
     useEffect(() => {
@@ -94,9 +95,26 @@ const RestaurantPage = () => {
                                         )}
                                         <span className="food-rating"><FiStar size={12} /> {f.rating}</span>
                                     </div>
-                                    <button className="btn-add-cart" onClick={() => addToCart(f, restaurant._id, restaurant.name)}>
-                                        + Add to Cart
-                                    </button>
+                                    <div className="food-card-buttons">
+                                        <button
+                                            className="btn-buy-now"
+                                            onClick={() => navigate('/checkout', {
+                                                state: {
+                                                    directItem: {
+                                                        ...f,
+                                                        quantity: 1,
+                                                        restaurantId: restaurant._id,
+                                                        restaurantName: restaurant.name || ''
+                                                    }
+                                                }
+                                            })}
+                                        >
+                                            Buy Now
+                                        </button>
+                                        <button className="btn-add-cart" onClick={() => addToCart(f, restaurant._id, restaurant.name)}>
+                                            + Cart
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );

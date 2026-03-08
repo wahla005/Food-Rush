@@ -9,6 +9,7 @@ const foodRoutes = require('./routes/foods');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
 const categoryRoutes = require('./routes/categories');
+const reviewRoutes = require('./routes/reviews');
 
 connectDB();
 
@@ -34,6 +35,7 @@ app.use('/api/foods', foodRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/', (req, res) => res.json({ message: '✅ FoodApp API Running' }));
 

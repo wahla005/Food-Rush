@@ -15,7 +15,7 @@ const foodItemSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     category: { type: String, required: true },
     isVeg: { type: Boolean, default: false },
-    rating: { type: Number, default: 4.0 },
+    rating: { type: Number, default: 0 },
     reviews: [reviewSchema],
     inStock: { type: Boolean, default: true },
     ingredients: [String],

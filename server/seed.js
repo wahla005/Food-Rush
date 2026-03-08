@@ -11,41 +11,41 @@ const IMG_RESTO = (id) => `https://images.unsplash.com/photo-${id}?w=700&h=450&f
 const restaurants = [
     {
         name: "McDonald's",
-        image: IMG_RESTO('1561758033-d89a9ad462b4'),   // Realistic tray with burger/fries
+        image: IMG_RESTO('1561758033-d89a9ad462b4'),
         cuisine: ['Fast Food', 'Burgers'],
-        rating: 4.3, deliveryTime: '25-35 min', minOrder: 300, deliveryFee: 49, isOpen: true,
+        deliveryTime: '25-35 min', minOrder: 300, deliveryFee: 49, isOpen: true,
         address: 'Main Boulevard, Lahore',
         description: "World's most famous fast food chain.",
     },
     {
         name: 'KFC',
-        image: IMG_RESTO('1616534497247-adb51cbd3fda'),   // Realistic fried chicken
+        image: IMG_RESTO('1616534497247-adb51cbd3fda'),
         cuisine: ['Fast Food', 'Fried Chicken'],
-        rating: 4.5, deliveryTime: '30-40 min', minOrder: 350, deliveryFee: 59, isOpen: true,
+        deliveryTime: '30-40 min', minOrder: 350, deliveryFee: 59, isOpen: true,
         address: 'Gulberg III, Lahore',
         description: "Finger lickin' good fried chicken.",
     },
     {
         name: 'Pizza Hut',
-        image: IMG_RESTO('1541745537411-b8046dc6d66c'),   // Fresh pizza on paper
+        image: IMG_RESTO('1541745537411-b8046dc6d66c'),
         cuisine: ['Pizza', 'Italian'],
-        rating: 4.2, deliveryTime: '35-50 min', minOrder: 500, deliveryFee: 79, isOpen: true,
+        deliveryTime: '35-50 min', minOrder: 500, deliveryFee: 79, isOpen: true,
         address: 'DHA Phase 5, Lahore',
         description: 'Premium pizzas freshly baked to perfection.',
     },
     {
         name: 'Desi Darbar',
-        image: IMG_RESTO('1585937421612-70a008356fbe'),   // Chicken karahi / desi food
+        image: IMG_RESTO('1585937421612-70a008356fbe'),
         cuisine: ['Desi', 'BBQ', 'Pakistani'],
-        rating: 4.6, deliveryTime: '40-55 min', minOrder: 400, deliveryFee: 69, isOpen: true,
+        deliveryTime: '40-55 min', minOrder: 400, deliveryFee: 69, isOpen: true,
         address: 'Model Town, Lahore',
         description: 'Authentic Pakistani cuisine and BBQ.',
     },
     {
         name: 'Dragon Palace',
-        image: IMG_RESTO('1534482421-64566f976cfa'),      // Noodles / Chinese
+        image: IMG_RESTO('1534482421-64566f976cfa'),
         cuisine: ['Chinese', 'Asian'],
-        rating: 4.1, deliveryTime: '35-45 min', minOrder: 450, deliveryFee: 59, isOpen: true,
+        deliveryTime: '35-45 min', minOrder: 450, deliveryFee: 59, isOpen: true,
         address: 'Johar Town, Lahore',
         description: 'Authentic Chinese cuisine with bold flavors.',
     },
@@ -57,50 +57,50 @@ const getFoodItems = (restaurantId, name) => {
             {
                 name: 'Big Mac',
                 description: 'Classic double patty burger with special sauce',
-                image: IMG('1568901346375-23c9450c58cd'),    // Big Mac burger
-                price: 750, category: 'Burgers', isVeg: false, rating: 4.5,
+                image: IMG('1568901346375-23c9450c58cd'),
+                price: 750, category: 'Burgers', isVeg: false,
                 ingredients: ['Beef Patty', 'Cheese', 'Lettuce', 'Tomato', 'Special Sauce', 'Sesame Bun'],
             },
             {
                 name: 'McChicken',
                 description: 'Crispy chicken burger with mayo',
-                image: IMG('1551782450-a2132b4ba21d'),        // Chicken sandwich/burger
-                price: 650, category: 'Burgers', isVeg: false, rating: 5.0,
+                image: IMG('1551782450-a2132b4ba21d'),
+                price: 650, category: 'Burgers', isVeg: false,
                 ingredients: ['Crispy Chicken', 'Mayo', 'Lettuce', 'Soft Bun'],
             },
             {
                 name: 'Large Fries',
                 description: 'Golden crispy French fries',
-                image: IMG('1573080496219-bb080dd4f877'),     // French fries
-                price: 299, category: 'Sides', isVeg: true, rating: 4.4,
+                image: IMG('1573080496219-bb080dd4f877'),
+                price: 299, category: 'Sides', isVeg: true,
                 ingredients: ['Potatoes', 'Salt', 'Vegetable Oil'],
             },
             {
                 name: 'McFlurry Oreo',
                 description: 'Creamy soft serve ice cream with Oreo crumbles',
-                image: IMG('1497034825429-c343d7c6a68f'),     // Ice cream dessert
-                price: 350, category: 'Desserts', isVeg: true, rating: 4.6,
+                image: IMG('1497034825429-c343d7c6a68f'),
+                price: 350, category: 'Desserts', isVeg: true,
                 ingredients: ['Ice Cream', 'Oreo Cookies', 'Milk'],
             },
             {
                 name: 'Vanilla Soft Serve Cone',
                 description: 'Classic creamy vanilla soft serve in a crisp cone',
                 image: '/images/food/mcd-ice-cream.png',
-                price: 150, category: 'Ice Cream', isVeg: true, rating: 4.8,
+                price: 150, category: 'Ice Cream', isVeg: true,
                 ingredients: ['Milk', 'Sugar', 'Vanilla', 'Wafer Cone'],
             },
             {
                 name: 'Medium Coca-Cola',
                 description: 'Chilled and refreshing Coca-Cola classic',
                 image: '/images/food/mcd-drinks.png',
-                price: 180, category: 'Drinks', isVeg: true, rating: 4.5,
+                price: 180, category: 'Drinks', isVeg: true,
                 ingredients: ['Carbonated Water', 'Sugar', 'Caffeine'],
             },
             {
                 name: 'Hot Apple Pie',
                 description: 'Crispy pastry with a warm, cinnamon apple filling',
                 image: '/images/food/mcd-desserts.png',
-                price: 250, category: 'Desserts', isVeg: true, rating: 4.7,
+                price: 250, category: 'Desserts', isVeg: true,
                 ingredients: ['Apples', 'Cinnamon', 'Wheat Flour', 'Sugar'],
             },
         ],
@@ -108,50 +108,50 @@ const getFoodItems = (restaurantId, name) => {
             {
                 name: 'Zinger Burger',
                 description: 'Crispy spicy chicken fillet burger',
-                image: IMG('1606755962773-d324e0a13086'),     // Fried chicken burger
-                price: 699, category: 'Burgers', isVeg: false, rating: 4.6,
+                image: IMG('1606755962773-d324e0a13086'),
+                price: 699, category: 'Burgers', isVeg: false,
                 ingredients: ['Spicy Chicken Fillet', 'Coleslaw', 'Mayo', 'Bun'],
             },
             {
                 name: '4-pc Chicken',
                 description: 'Signature KFC crispy fried chicken pieces',
-                image: IMG('1626645738196-c2a7c87a8f58'),     // KFC fried chicken
-                price: 899, category: 'Fried Chicken', isVeg: false, rating: 4.7,
+                image: IMG('1626645738196-c2a7c87a8f58'),
+                price: 899, category: 'Fried Chicken', isVeg: false,
                 ingredients: ['Chicken', '11 Secret Herbs & Spices', 'Flour'],
             },
             {
                 name: 'Hot Wings',
                 description: 'Spicy buffalo chicken wings (6 pcs)',
-                image: IMG('1527477396000-e27163b481c2'),     // Chicken wings
-                price: 579, category: 'Sides', isVeg: false, rating: 4.4,
+                image: IMG('1527477396000-e27163b481c2'),
+                price: 579, category: 'Sides', isVeg: false,
                 ingredients: ['Chicken Wings', 'Hot Sauce', 'Spices'],
             },
             {
                 name: 'Pepsi Large',
                 description: 'Chilled Pepsi served in a large cup with ice',
-                image: IMG('1554866585-cd94860890b7'),        // Soft drink
-                price: 149, category: 'Drinks', isVeg: true, rating: 4.0,
+                image: IMG('1554866585-cd94860890b7'),
+                price: 149, category: 'Drinks', isVeg: true,
                 ingredients: ['Pepsi', 'Ice'],
             },
             {
                 name: 'Oreo Krusher',
                 description: 'Thick and creamy milkshake with crushed Oreo pieces',
                 image: '/images/food/kfc-ice-cream.png',
-                price: 450, category: 'Ice Cream', isVeg: true, rating: 4.9,
+                price: 450, category: 'Ice Cream', isVeg: true,
                 ingredients: ['Milk', 'Ice Cream', 'Oreo Cookies'],
             },
             {
                 name: 'Mirinda Orange',
                 description: 'Refreshing tangy orange flavored soda',
                 image: '/images/food/kfc-drinks.png',
-                price: 149, category: 'Drinks', isVeg: true, rating: 4.4,
+                price: 149, category: 'Drinks', isVeg: true,
                 ingredients: ['Carbonated Water', 'Orange Flavor', 'Sugar'],
             },
             {
                 name: 'Chocolate Lava Cake',
                 description: 'Warm chocolate cake with a molten chocolate center',
                 image: '/images/food/kfc-desserts.png',
-                price: 320, category: 'Desserts', isVeg: true, rating: 4.8,
+                price: 320, category: 'Desserts', isVeg: true,
                 ingredients: ['Dark Chocolate', 'Butter', 'Eggs', 'Sugar'],
             },
         ],
@@ -159,29 +159,29 @@ const getFoodItems = (restaurantId, name) => {
             {
                 name: 'Pepperoni Pizza',
                 description: 'Classic pepperoni with melted mozzarella cheese',
-                image: IMG('1565299624946-b28f40a0ae38'),     // Pepperoni pizza
-                price: 1299, category: 'Pizza', isVeg: false, rating: 4.5,
+                image: IMG('1565299624946-b28f40a0ae38'),
+                price: 1299, category: 'Pizza', isVeg: false,
                 ingredients: ['Pizza Dough', 'Tomato Sauce', 'Mozzarella', 'Pepperoni'],
             },
             {
                 name: 'BBQ Chicken Pizza',
                 description: 'Smoky BBQ sauce with grilled chicken and cheese',
-                image: IMG('1513104890138-7c749659a591'),     // BBQ chicken pizza
-                price: 1399, category: 'Pizza', isVeg: false, rating: 4.4,
+                image: IMG('1513104890138-7c749659a591'),
+                price: 1399, category: 'Pizza', isVeg: false,
                 ingredients: ['Pizza Dough', 'BBQ Sauce', 'Grilled Chicken', 'Cheese'],
             },
             {
                 name: 'Pasta Carbonara',
                 description: 'Creamy pasta with egg, cheese, and crispy beef bacon',
-                image: IMG('1546549032-9571cd6b27df'),     // Pasta
-                price: 899, category: 'Pasta', isVeg: false, rating: 4.6,
+                image: IMG('1546549032-9571cd6b27df'),
+                price: 899, category: 'Pasta', isVeg: false,
                 ingredients: ['Spaghetti', 'Eggs', 'Cheese', 'Beef Bacon'],
             },
             {
                 name: 'Garden Salad',
                 description: 'Fresh seasonal vegetables with lemon dressing',
-                image: IMG('1512621776951-a57141f2eefd'),     // Healthy/Salad
-                price: 450, category: 'Salad', isVeg: true, rating: 4.3,
+                image: IMG('1512621776951-a57141f2eefd'),
+                price: 450, category: 'Salad', isVeg: true,
                 ingredients: ['Lettuce', 'Cucumber', 'Tomatoes', 'Lemon Dressing'],
             },
         ],
@@ -189,36 +189,36 @@ const getFoodItems = (restaurantId, name) => {
             {
                 name: 'Chicken Karahi',
                 description: 'Spicy wok-cooked chicken with tomatoes and green chili',
-                image: IMG('1585937421612-70a008356fbe'),     // Chicken karahi / curry
-                price: 999, category: 'Desi', isVeg: false, rating: 4.8,
+                image: IMG('1585937421612-70a008356fbe'),
+                price: 999, category: 'Desi', isVeg: false,
                 ingredients: ['Chicken', 'Tomatoes', 'Green Chili', 'Ginger', 'Spices'],
             },
             {
                 name: 'Seekh Kabab',
                 description: 'Minced beef BBQ kababs on skewers (4 pcs)',
-                image: IMG('1599487488170-d11ec9c172f0'),     // Seekh / skewer kabab
-                price: 799, category: 'BBQ', isVeg: false, rating: 4.7,
+                image: IMG('1599487488170-d11ec9c172f0'),
+                price: 799, category: 'BBQ', isVeg: false,
                 ingredients: ['Minced Beef', 'Onions', 'Spices', 'Fresh Herbs'],
             },
             {
                 name: 'Grilled Salmon',
                 description: 'Perfectly seared salmon fillet with lemon butter',
-                image: IMG('1519708227418-c8fd9a32b7a2'),     // High quality Salmon
-                price: 1850, category: 'Seafood', isVeg: false, rating: 4.9,
+                image: IMG('1519708227418-c8fd9a32b7a2'),
+                price: 1850, category: 'Seafood', isVeg: false,
                 ingredients: ['Salmon', 'Lemon', 'Butter', 'Asparagus'],
             },
             {
                 name: 'Biryani (Full)',
                 description: 'Aromatic basmati rice layered with tender chicken',
-                image: IMG('1589302168068-9646fd2e3b54'),     // High quality Biryani
-                price: 850, category: 'Desi', isVeg: false, rating: 4.6,
+                image: IMG('1589302168068-9646fd2e3b54'),
+                price: 850, category: 'Desi', isVeg: false,
                 ingredients: ['Basmati Rice', 'Chicken', 'Saffron', 'Whole Spices'],
             },
             {
                 name: 'Pancakes & Syrup',
                 description: 'Fluffy buttermilk pancakes with maple syrup',
-                image: IMG('1567620985472-f51b4b9ad99d'),     // High quality Pancakes
-                price: 550, category: 'Breakfast', isVeg: true, rating: 4.7,
+                image: IMG('1567620985472-f51b4b9ad99d'),
+                price: 550, category: 'Breakfast', isVeg: true,
                 ingredients: ['Flour', 'Milk', 'Eggs', 'Maple Syrup'],
             },
         ],
@@ -226,29 +226,29 @@ const getFoodItems = (restaurantId, name) => {
             {
                 name: 'Chow Mein',
                 description: 'Stir-fried noodles with chicken and fresh vegetables',
-                image: IMG('1534482421-64566f976cfa'),        // Noodles stir-fry
-                price: 599, category: 'Chinese', isVeg: false, rating: 4.3,
+                image: IMG('1534482421-64566f976cfa'),
+                price: 599, category: 'Chinese', isVeg: false,
                 ingredients: ['Noodles', 'Chicken', 'Spring Onion', 'Soy Sauce', 'Vegetables'],
             },
             {
                 name: 'Beef Steak',
                 description: 'Juicy ribeye steak with mashed potatoes',
-                image: IMG('1600891964599-f61ba0e24092'),     // High quality Steak
-                price: 2450, category: 'Steaks', isVeg: false, rating: 4.8,
+                image: IMG('1600891964599-f61ba0e24092'),
+                price: 2450, category: 'Steaks', isVeg: false,
                 ingredients: ['Ribeye Beef', 'Potatoes', 'Butter', 'Rosemary'],
             },
             {
                 name: 'Cappuccino',
                 description: 'Rich espresso with frothy steamed milk',
-                image: IMG('1509042239860-f550ce710b93'),     // Coffee
-                price: 399, category: 'Coffee', isVeg: true, rating: 4.5,
+                image: IMG('1509042239860-f550ce710b93'),
+                price: 399, category: 'Coffee', isVeg: true,
                 ingredients: ['Espresso', 'Steamed Milk', 'Cocoa Powder'],
             },
             {
                 name: 'Quinoa Bowl',
                 description: 'Healthy quinoa with roasted vegetables and tahini',
-                image: IMG('1512621776951-a57141f2eefd'),     // High quality Healthy bowl
-                price: 750, category: 'Healthy', isVeg: true, rating: 4.4,
+                image: IMG('1512621776951-a57141f2eefd'),
+                price: 750, category: 'Healthy', isVeg: true,
                 ingredients: ['Quinoa', 'Sweet Potato', 'Kale', 'Tahini'],
             },
         ],

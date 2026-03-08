@@ -11,12 +11,27 @@ const RestaurantPage = () => {
     const { id } = useParams();
     const [data, setData] = useState(null);
     const [activeCategory, setActiveCategory] = useState('All');
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { addToCart } = useCart();
 
     useEffect(() => {
-        API.get(`/restaurants/${id}`).then(r => { setData(r.data); setLoading(false); });
+        const fetchRestData = async () => {
+            try {
+                const [restRes, reviewsRes] = await Promise.all([
+                    API.get(`/restaurants/${id}`),
+                    API.get(`/reviews/restaurant/${id}`)
+                ]);
+                setData(restRes.data);
+                setReviews(reviewsRes.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRestData();
     }, [id]);
 
     if (loading) return <div className="app-page"><Navbar /><div className="loading-center">Loading...</div></div>;
@@ -93,7 +108,17 @@ const RestaurantPage = () => {
                                         ) : (
                                             <span className="food-price">Rs. {f.price}</span>
                                         )}
-                                        <span className="food-rating"><FiStar size={12} /> {f.rating}</span>
+                                        <div className="food-rating" style={{ display: 'flex', gap: '0.1rem', alignItems: 'center' }}>
+                                            {[1, 2, 3, 4, 5].map(n => (
+                                                <FiStar
+                                                    key={n}
+                                                    size={12}
+                                                    fill={n <= Math.round(f.rating) ? "#f59e0b" : "none"}
+                                                    stroke={n <= Math.round(f.rating) ? "#f59e0b" : "rgba(0,0,0,0.2)"}
+                                                />
+                                            ))}
+                                            <span style={{ fontSize: '0.75rem', marginLeft: '0.3rem', color: 'rgba(0,0,0,0.5)' }}>({f.rating || 0})</span>
+                                        </div>
                                     </div>
                                     <div className="food-card-buttons">
                                         <button
@@ -119,6 +144,45 @@ const RestaurantPage = () => {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Reviews Section */}
+                <div className="reviews-section" style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+                    <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <FiStar fill="#f59e0b" stroke="#f59e0b" /> Customer Reviews ({reviews.length})
+                    </h2>
+                    {reviews.length === 0 ? (
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>No reviews yet. Be the first to rate!</p>
+                    ) : (
+                        <div className="reviews-list" style={{ display: 'grid', gap: '1rem' }}>
+                            {reviews.map(rev => (
+                                <div key={rev._id} className="review-card" style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    padding: '1.2rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255,255,255,0.1)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <span style={{ fontWeight: 600 }}>{rev.user?.name || 'Anonymous'}</span>
+                                        <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>
+                                            {new Date(rev.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.2rem', marginBottom: '0.5rem' }}>
+                                        {[1, 2, 3, 4, 5].map(n => (
+                                            <FiStar
+                                                key={n}
+                                                size={14}
+                                                fill={n <= rev.rating ? "#f59e0b" : "none"}
+                                                stroke={n <= rev.rating ? "#f59e0b" : "rgba(255,255,255,0.3)"}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: 'rgba(255,255,255,0.9)' }}>{rev.comment}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

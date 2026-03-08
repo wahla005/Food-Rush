@@ -69,7 +69,17 @@ const FoodDetailsPage = () => {
                         <p className="food-detail-desc">{food.description}</p>
 
                         <div className="food-detail-meta">
-                            <span><FiStar /> {food.rating} ({food.reviews?.length || 0} reviews)</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                {[1, 2, 3, 4, 5].map(n => (
+                                    <FiStar
+                                        key={n}
+                                        size={16}
+                                        fill={n <= Math.round(food.rating) ? "#f59e0b" : "none"}
+                                        stroke={n <= Math.round(food.rating) ? "#f59e0b" : "rgba(0,0,0,0.2)"}
+                                    />
+                                ))}
+                                <span style={{ marginLeft: '0.4rem' }}>{food.rating} ({food.reviews?.length || 0} reviews)</span>
+                            </span>
                             <span><FiClock /> {food.restaurant?.deliveryTime}</span>
                             <span><FiTruck /> Rs. {food.restaurant?.deliveryFee} delivery</span>
                         </div>
@@ -134,31 +144,10 @@ const FoodDetailsPage = () => {
                 <section className="reviews-section">
                     <h2>Reviews & Ratings</h2>
 
-                    {/* Add Review Form */}
-                    <form onSubmit={handleReview} className="review-form">
-                        <h3>Leave a Review</h3>
-                        <div className="star-select">
-                            {[1, 2, 3, 4, 5].map(s => (
-                                <button type="button" key={s}
-                                    className={`star-btn ${review.rating >= s ? 'star-active' : ''}`}
-                                    onClick={() => setReview(r => ({ ...r, rating: s }))}>★</button>
-                            ))}
-                        </div>
-                        <textarea
-                            placeholder="Write your review..."
-                            value={review.comment}
-                            onChange={e => setReview(r => ({ ...r, comment: e.target.value }))}
-                            className="review-textarea"
-                        />
-                        <button type="submit" className="btn-orange" disabled={submitting}>
-                            {submitting ? 'Submitting...' : 'Submit Review'}
-                        </button>
-                    </form>
-
                     {/* Reviews List */}
                     <div className="reviews-list">
                         {food.reviews?.length === 0 ? (
-                            <p className="no-reviews">No reviews yet. Be the first!</p>
+                            <p className="no-reviews">No reviews yet.</p>
                         ) : (
                             food.reviews?.map((rev, i) => (
                                 <div key={i} className="review-item">

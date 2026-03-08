@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2, FiPlus, FiX, FiLogOut, FiShield, FiEdit } from 'react-icons/fi';
+import { FiTrash2, FiPlus, FiX, FiLogOut, FiShield, FiEdit, FiStar } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const TABS = ['Stats', 'Orders', 'Food Items', 'Restaurants', 'Categories', 'Users'];
+const TABS = ['Stats', 'Orders', 'Reviews', 'Food Items', 'Restaurants', 'Categories', 'Users'];
 
 const AdminDashboard = () => {
     const { adminLogout } = useAdminAuth();
     const navigate = useNavigate();
     const [tab, setTab] = useState('Stats');
     const [orders, setOrders] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [foods, setFoods] = useState([]);
     const [restaurants, setRestaurants] = useState([]);
     const [users, setUsers] = useState([]);
@@ -38,6 +39,8 @@ const AdminDashboard = () => {
         try {
             if (tab === 'Orders') {
                 const r = await API.get('/admin/orders'); setOrders(r.data);
+            } else if (tab === 'Reviews') {
+                const r = await API.get('/admin/reviews'); setReviews(r.data);
             } else if (tab === 'Food Items') {
                 const [f, rest, cats] = await Promise.all([API.get('/foods'), API.get('/restaurants'), API.get('/categories')]);
                 setFoods(f.data); setRestaurants(rest.data); setCategories(cats.data);
@@ -51,6 +54,17 @@ const AdminDashboard = () => {
                 const r = await API.get('/admin/stats'); setStats(r.data);
             }
         } catch (err) { console.error(err); }
+    };
+
+    const deleteReview = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this review? This will update the restaurant and product ratings.')) return;
+        try {
+            await API.delete(`/admin/reviews/${id}`);
+            setReviews(prev => prev.filter(r => r._id !== id));
+            toast.success('Review deleted');
+        } catch {
+            toast.error('Failed to delete review');
+        }
     };
 
     const handleLogout = () => {
@@ -308,6 +322,88 @@ const AdminDashboard = () => {
                                         </td>
                                     </tr>
                                 ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* ── REVIEWS ── */}
+                {tab === 'Reviews' && (
+                    <div className="admin-table-wrap">
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Restaurant</th>
+                                    <th>Product Rated</th>
+                                    <th>Rating</th>
+                                    <th>Feedback</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {reviews.map(rev => (
+                                    <tr key={rev._id}>
+                                        <td>{new Date(rev.createdAt).toLocaleDateString()}</td>
+                                        <td>{rev.user?.name}<br /><small>{rev.user?.email}</small></td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                                {rev.restaurant?.image && (
+                                                    <img src={rev.restaurant.image} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                                )}
+                                                <div>
+                                                    <p style={{ fontWeight: 800, color: '#f59e0b', margin: 0, fontSize: '1rem' }}>
+                                                        {rev.restaurant?.name || rev.order?.restaurantName || 'Unknown Restaurant'}
+                                                    </p>
+                                                    <small style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>ID: {rev.restaurant?._id?.slice(-6).toUpperCase() || 'N/A'}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                                {rev.foodItem?.image && (
+                                                    <img src={rev.foodItem.image} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                                )}
+                                                <div style={{ lineHeight: 1.2 }}>
+                                                    <p style={{ fontWeight: 700, color: '#fff', margin: 0, fontSize: '0.95rem' }}>{rev.foodItem?.name || 'Deleted Product'}</p>
+                                                    <small style={{ color: 'rgba(245, 158, 11, 0.6)', fontWeight: 600, fontSize: '0.75rem' }}>Order #{rev.order?._id?.slice(-8).toUpperCase()}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.1rem' }}>
+                                                {[1, 2, 3, 4, 5].map(n => (
+                                                    <FiStar
+                                                        key={n}
+                                                        size={12}
+                                                        fill={n <= rev.rating ? "#f59e0b" : "none"}
+                                                        stroke={n <= rev.rating ? "#f59e0b" : "rgba(255,255,255,0.3)"}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td style={{ maxWidth: '300px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>
+                                            {rev.comment}
+                                        </td>
+                                        <td>
+                                            <button
+                                                onClick={() => deleteReview(rev._id)}
+                                                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.4rem', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                title="Delete Review"
+                                            >
+                                                <FiTrash2 size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {reviews.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.5)' }}>
+                                            No reviews found.
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

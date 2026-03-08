@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Order = require('../models/Order');
 const User = require('../models/User');
+const Review = require('../models/Review');
 const FoodItem = require('../models/FoodItem');
 const Restaurant = require('../models/Restaurant');
 const Category = require('../models/Category');
@@ -241,6 +242,56 @@ router.put('/categories/:id', adminProtect, async (req, res) => {
         res.json(category);
     } catch (err) {
         if (err.code === 11000) return res.status(400).json({ message: 'Category name already exists' });
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// DELETE /api/admin/reviews/:id
+router.delete('/reviews/:id', adminProtect, async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        const { restaurant: restaurantId, foodItem: foodItemId } = review;
+
+        // 1. Delete the review
+        await Review.findByIdAndDelete(req.params.id);
+
+        // 2. Recalculate FoodItem Rating
+        const food = await FoodItem.findById(foodItemId);
+        if (food) {
+            // Remove from food item's internal reviews array
+            food.reviews = food.reviews.filter(r => r.user.toString() !== review.user.toString() || r.comment !== review.comment);
+
+            if (food.reviews.length > 0) {
+                const foodAvg = food.reviews.reduce((acc, curr) => acc + curr.rating, 0) / food.reviews.length;
+                food.rating = Number(foodAvg.toFixed(1));
+            } else {
+                food.rating = 0;
+            }
+            await food.save();
+        }
+
+        // 3. Recalculate Restaurant Rating (Overall)
+        const remainingReviews = await Review.find({ restaurant: restaurantId });
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (restaurant) {
+            if (remainingReviews.length > 0) {
+                const restAvg = remainingReviews.reduce((acc, curr) => acc + curr.rating, 0) / remainingReviews.length;
+                restaurant.rating = Number(restAvg.toFixed(1));
+                restaurant.numReviews = remainingReviews.length;
+            } else {
+                restaurant.rating = 0;
+                restaurant.numReviews = 0;
+            }
+            await restaurant.save();
+        }
+
+        res.json({ message: 'Review deleted and ratings updated' });
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });

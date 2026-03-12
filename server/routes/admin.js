@@ -62,10 +62,13 @@ router.get('/orders', adminProtect, async (req, res) => {
 // PUT /api/admin/orders/:id
 router.put('/orders/:id', adminProtect, async (req, res) => {
     try {
-        const { status } = req.body;
-        const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const { status, cancelReason } = req.body;
+        const update = { status };
+        if (cancelReason !== undefined) update.cancelReason = cancelReason;
 
-        // NEW: Automatic Blocking Logic
+        const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
+
+        // Automatic Blocking Logic
         if (status === 'Not Received') {
             const userId = order.user;
             const notReceivedCount = await Order.countDocuments({ user: userId, status: 'Not Received' });
@@ -84,21 +87,54 @@ router.put('/orders/:id', adminProtect, async (req, res) => {
 // GET /api/admin/users
 router.get('/users', adminProtect, async (req, res) => {
     try {
-        const users = await User.find().select('-password').sort({ createdAt: -1 }).lean();
+        // Fetch users with their "Not Received" order count
+        const enhancedUsers = await User.aggregate([
+            { $sort: { createdAt: 1 } }, // Sort oldest first to assign regNumbers
+            {
+                $lookup: {
+                    from: 'orders',
+                    localField: '_id',
+                    foreignField: 'user',
+                    as: 'userOrders',
+                }
+            },
+            {
+                $project: {
+                    name: 1,
+                    email: 1,
+                    isBlocked: 1,
+                    createdAt: 1,
+                    image: 1,
+                    notReceivedCount: {
+                        $size: {
+                            $filter: {
+                                input: '$userOrders',
+                                as: 'order',
+                                cond: { $eq: ['$$order.status', 'Not Received'] }
+                            }
+                        }
+                    }
+                }
+            }
+        ]);
 
-        // Enhance each user with their "Not Received" order count
-        const enhancedUsers = await Promise.all(users.map(async (u) => {
-            const notReceivedCount = await Order.countDocuments({ user: u._id, status: 'Not Received' });
-            return { ...u, notReceivedCount };
+        // Assign registration numbers (1 = first registered user)
+        const finalUsers = enhancedUsers.map((u, index) => ({
+            ...u,
+            regNumber: index + 1
         }));
 
-        res.json(enhancedUsers);
+        // Sort newest first for the admin panel display
+        finalUsers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.json(finalUsers);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// PUT /api/admin/users/:id/block
+// GET /api/admin/users/:id/block
 router.put('/users/:id/block', adminProtect, async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -107,6 +143,30 @@ router.put('/users/:id/block', adminProtect, async (req, res) => {
         user.isBlocked = !user.isBlocked;
         await user.save();
         res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// GET /api/admin/foods
+router.get('/foods', adminProtect, async (req, res) => {
+    try {
+        const foods = await FoodItem.find().populate('restaurant', 'name').sort({ createdAt: -1 });
+        res.json(foods);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// GET /api/admin/reviews
+router.get('/reviews', adminProtect, async (req, res) => {
+    try {
+        const reviews = await Review.find()
+            .populate('user', 'name email')
+            .populate('restaurant', 'name')
+            .populate('foodItem', 'name')
+            .sort({ createdAt: -1 });
+        res.json(reviews);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -165,13 +225,38 @@ router.put('/restaurants/:id', adminProtect, async (req, res) => {
 
 // GET /api/admin/stats
 router.get('/stats', adminProtect, async (req, res) => {
+    console.log('--- GET /api/admin/stats requested ---');
     try {
-        const [totalOrders, totalUsers, totalFoods, totalCategories, totalRevenue] = await Promise.all([
+        const [totalOrders, totalUsers, totalFoods, totalCategories, totalRevenue, monthlyRevenue, monthlyUsers] = await Promise.all([
             Order.countDocuments(),
             User.countDocuments(),
             FoodItem.countDocuments(),
             Category.countDocuments(),
-            Order.aggregate([{ $group: { _id: null, total: { $sum: '$total' } } }]),
+            Order.aggregate([
+                { $match: { status: 'Delivered' } },
+                { $group: { _id: null, total: { $sum: '$total' } } }
+            ]),
+            // Monthly revenue from delivered orders
+            Order.aggregate([
+                { $match: { status: 'Delivered' } },
+                {
+                    $group: {
+                        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+                        revenue: { $sum: '$total' }
+                    }
+                },
+                { $sort: { '_id.year': -1, '_id.month': -1 } }
+            ]),
+            // Monthly new user signups
+            User.aggregate([
+                {
+                    $group: {
+                        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+                        count: { $sum: 1 }
+                    }
+                },
+                { $sort: { '_id.year': -1, '_id.month': -1 } }
+            ])
         ]);
         res.json({
             totalOrders,
@@ -179,6 +264,8 @@ router.get('/stats', adminProtect, async (req, res) => {
             totalFoods,
             totalCategories,
             totalRevenue: totalRevenue[0]?.total || 0,
+            monthlyRevenue,
+            monthlyUsers,
         });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });

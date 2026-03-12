@@ -20,6 +20,7 @@ const foodItemSchema = new mongoose.Schema({
     inStock: { type: Boolean, default: true },
     ingredients: [String],
     discount: { type: Number, default: 0, min: 0, max: 100 },  // percentage off (0 = no discount)
+    isTopRated: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('FoodItem', foodItemSchema);

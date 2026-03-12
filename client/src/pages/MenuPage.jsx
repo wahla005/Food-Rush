@@ -19,6 +19,13 @@ const MenuPage = () => {
     const [vegOnly, setVegOnly] = useState(false);
     const { addToCart, restaurantId } = useCart();
 
+    const getImageUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        const baseUrl = API.defaults.baseURL.replace('/api', '');
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     const fetchFoods = async () => {
         setLoading(true);
         try {
@@ -115,7 +122,7 @@ const MenuPage = () => {
                             return (
                                 <div key={f._id} className="food-card">
                                     <Link to={`/food/${f._id}`} style={{ position: 'relative', display: 'block' }}>
-                                        <img src={f.image} alt={f.name} className="food-card-img" />
+                                        <img src={getImageUrl(f.image)} alt={f.name} className="food-card-img" />
                                         {disc > 0 && (
                                             <span className="discount-badge-card">{disc}% OFF</span>
                                         )}

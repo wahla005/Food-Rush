@@ -57,15 +57,22 @@ const AppRoutes = () => (
   </Routes>
 );
 
+import { ThemeProvider } from './context/ThemeContext';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 const App = () => (
-  <AuthProvider>
-    <CartProvider>
-      <BrowserRouter>
-        <Toaster position="top-right" toastOptions={{ style: { fontFamily: "'Inter', sans-serif", fontSize: '14px' } }} />
-        <AppRoutes />
-      </BrowserRouter>
-    </CartProvider>
-  </AuthProvider>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <Toaster position="top-right" toastOptions={{ style: { fontFamily: "'Inter', sans-serif", fontSize: '14px' } }} />
+            <AppRoutes />
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </GoogleOAuthProvider>
 );
 
 export default App;

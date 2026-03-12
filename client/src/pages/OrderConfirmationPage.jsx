@@ -27,7 +27,7 @@ const OrderConfirmationPage = () => {
 
                     <div className="order-number">
                         <span>Order #</span>
-                        <strong>{order._id?.slice(-8).toUpperCase()}</strong>
+                        <strong>{order.dailyOrderNumber ? `#${order.dailyOrderNumber}` : order._id?.slice(-8).toUpperCase()}</strong>
                     </div>
 
                     <div className="delivery-eta">

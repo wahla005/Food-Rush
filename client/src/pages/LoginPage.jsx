@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { FcGoogle } from 'react-icons/fc';
+import { useGoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 import PasswordInput from '../components/PasswordInput';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
@@ -24,7 +26,33 @@ const LoginPage = () => {
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleGoogleLogin = () => toast.error('Google login is currently unavailable');
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (response) => {
+            setGoogleLoading(true);
+            try {
+                // Get user info from Google
+                const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${response.access_token}`);
+                const googleUser = await res.json();
+
+                // Send to backend
+                const { data } = await API.post('/auth/google', {
+                    googleId: googleUser.sub,
+                    email: googleUser.email,
+                    name: googleUser.name
+                });
+
+                login(data.user, data.token);
+                toast.success(`Welcome, ${data.user.name}!`);
+                navigate('/home');
+            } catch (err) {
+                console.error(err);
+                toast.error('Google login failed');
+            } finally {
+                setGoogleLoading(false);
+            }
+        },
+        onError: () => toast.error('Google login failed')
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();

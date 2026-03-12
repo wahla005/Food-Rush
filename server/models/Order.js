@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema({
     total: Number,
     status: {
         type: String,
-        enum: ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled', 'Not Received'],
+        enum: ['Payment Pending', 'Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled', 'Not Received'],
         default: 'Pending',
     },
     deliveryAddress: {
@@ -28,7 +28,17 @@ const orderSchema = new mongoose.Schema({
         city: String,
     },
     paymentMethod: { type: String, default: 'COD' },
+    // Digital wallet payment proof
+    transactionRef: { type: String, default: null },
+    mobilePayNumber: { type: String, default: null },
+    paymentProof: { type: String, default: null }, // URL to uploaded screenshot
+    cancelReason: { type: String, default: null },  // Shown to user when order is cancelled
     estimatedDelivery: { type: String, default: '30-45 min' },
+    dailyOrderNumber: { type: Number },
 }, { timestamps: true });
+
+orderSchema.index({ user: 1, status: 1 });
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ total: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

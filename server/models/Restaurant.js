@@ -11,6 +11,7 @@ const restaurantSchema = new mongoose.Schema({
     isOpen: { type: Boolean, default: true },
     address: String,
     description: String,
+    isPopular: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurant', restaurantSchema);

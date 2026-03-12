@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2, FiPlus, FiX, FiLogOut, FiShield, FiEdit, FiStar } from 'react-icons/fi';
+import { FiTrash2, FiPlus, FiX, FiLogOut, FiShield, FiEdit, FiStar, FiChevronDown, FiRefreshCw } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     const { adminLogout } = useAdminAuth();
     const navigate = useNavigate();
     const [tab, setTab] = useState('Stats');
+    const [loading, setLoading] = useState(false);
     const [orders, setOrders] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [foods, setFoods] = useState([]);
@@ -36,13 +37,14 @@ const AdminDashboard = () => {
     useEffect(() => { loadData(); }, [tab]);
 
     const loadData = async () => {
+        setLoading(true);
         try {
             if (tab === 'Orders') {
                 const r = await API.get('/admin/orders'); setOrders(r.data);
             } else if (tab === 'Reviews') {
                 const r = await API.get('/admin/reviews'); setReviews(r.data);
             } else if (tab === 'Food Items') {
-                const [f, rest, cats] = await Promise.all([API.get('/foods'), API.get('/restaurants'), API.get('/categories')]);
+                const [f, rest, cats] = await Promise.all([API.get('/admin/foods'), API.get('/restaurants'), API.get('/categories')]);
                 setFoods(f.data); setRestaurants(rest.data); setCategories(cats.data);
             } else if (tab === 'Restaurants') {
                 const r = await API.get('/restaurants'); setRestaurants(r.data);
@@ -53,7 +55,17 @@ const AdminDashboard = () => {
             } else if (tab === 'Stats') {
                 const r = await API.get('/admin/stats'); setStats(r.data);
             }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                toast.error('Session expired. Please login again.');
+                adminLogout();
+            } else {
+                toast.error('Failed to load data. Please check server.');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     const deleteReview = async (id) => {
@@ -81,10 +93,28 @@ const AdminDashboard = () => {
         } catch { toast.error('Failed to update status'); }
     };
 
-    const updateOrderStatus = async (id, status) => {
+    const togglePopularStatus = async (id, currentStatus) => {
         try {
-            await API.put(`/admin/orders/${id}`, { status });
-            setOrders(prev => prev.map(o => o._id === id ? { ...o, status } : o));
+            const { data } = await API.put(`/admin/restaurants/${id}`, { isPopular: !currentStatus });
+            setRestaurants(prev => prev.map(r => r._id === id ? { ...r, isPopular: data.isPopular } : r));
+            toast.success(`Restaurant ${data.isPopular ? 'added to' : 'removed from'} popular list`);
+        } catch { toast.error('Failed to update popular status'); }
+    };
+
+    const updateOrderStatus = async (id, status) => {
+        let cancelReason = null;
+        if (status === 'Cancelled') {
+            const reason = window.prompt(
+                'Enter the reason for cancelling this order (this will be shown to the customer):',
+                'Order cancelled by admin.'
+            );
+            if (reason === null) return; // user pressed Cancel on prompt
+            cancelReason = reason.trim() || 'Order cancelled by admin.';
+        }
+
+        try {
+            await API.put(`/admin/orders/${id}`, { status, cancelReason });
+            setOrders(prev => prev.map(o => o._id === id ? { ...o, status, cancelReason } : o));
             toast.success('Status updated');
         } catch { toast.error('Failed'); }
     };
@@ -96,6 +126,13 @@ const AdminDashboard = () => {
             setFoods(prev => prev.filter(f => f._id !== id));
             toast.success('Deleted');
         } catch { toast.error('Failed'); }
+    };
+
+    const getImageUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        const baseUrl = API.defaults.baseURL.replace('/api', '');
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
     const handleImageUpload = async (e, setFormData) => {
@@ -110,7 +147,7 @@ const AdminDashboard = () => {
             const { data } = await API.post('/admin/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            // Construct full URL with backend base (removing '/api' suffix)
+            // Construct full URL with backend base (removing '/api')
             const baseUrl = API.defaults.baseURL.replace('/api', '');
             const imageUrl = data.url.startsWith('http') ? data.url : `${baseUrl}${data.url}`;
             setFormData(prev => ({ ...prev, image: imageUrl }));
@@ -140,7 +177,7 @@ const AdminDashboard = () => {
             const { data } = await API.post('/admin/restaurants', { ...newRestaurant, cuisine: cuisineArray });
             setRestaurants(prev => [data, ...prev]);
             setShowAddRestaurant(false);
-            setNewRestaurant({ name: '', image: '', cuisine: '', deliveryTime: '30-45 min', minOrder: 200, deliveryFee: 50, description: '' });
+            setNewRestaurant({ name: '', image: '', cuisine: '', deliveryTime: '30-45 min', minOrder: 200, deliveryFee: 50, description: '', address: '' });
             toast.success('Restaurant added!');
         } catch { toast.error('Failed to add'); }
     };
@@ -224,6 +261,14 @@ const AdminDashboard = () => {
         } catch { toast.error('Failed to update user status'); }
     };
 
+    const toggleTopRated = async (id, isTopRated) => {
+        try {
+            const { data } = await API.put(`/admin/foods/${id}`, { isTopRated: !isTopRated });
+            setFoods(prev => prev.map(f => f._id === id ? { ...f, isTopRated: data.isTopRated } : f));
+            toast.success(`Dish ${data.isTopRated ? 'added to' : 'removed from'} top rated`);
+        } catch { toast.error('Failed to update status'); }
+    };
+
     const applyDiscount = async (id, value) => {
         const pct = Math.min(100, Math.max(0, Number(value)));
         try {
@@ -233,7 +278,48 @@ const AdminDashboard = () => {
         } catch { toast.error('Failed to update discount'); }
     };
 
-    const STATUS_OPTIONS = ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled', 'Not Received'];
+    const STATUS_OPTIONS = ['Payment Pending', 'Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled', 'Not Received'];
+
+    const STATUS_COLORS = {
+        'Payment Pending': '#f97316',
+        Pending: '#f59e0b',
+        Confirmed: '#3b82f6',
+        Preparing: '#8b5cf6',
+        'Out for Delivery': '#f97316',
+        Delivered: '#10b981',
+        Cancelled: '#ef4444',
+        'Not Received': '#6366f1'
+    };
+
+    // Admin confirms digital wallet payment → move to Pending (standard flow)
+    const confirmPayment = async (orderId) => {
+        if (!window.confirm('Confirm this payment? The order will move to Pending status.')) return;
+        try {
+            await API.put(`/admin/orders/${orderId}`, { status: 'Pending', cancelReason: null });
+            setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'Pending', cancelReason: null } : o));
+            toast.success('Payment confirmed! Order is now Pending.');
+        } catch { toast.error('Failed to confirm payment'); }
+    };
+
+    // Admin declines payment proof → cancel order with reason
+    const declinePayment = async (orderId) => {
+        const reason = window.prompt(
+            'Enter the reason for declining this payment (this will be shown to the customer):',
+            'Payment proof is unclear or incorrect. Please contact support.'
+        );
+        if (reason === null) return; // user pressed Cancel on prompt
+        const finalReason = reason.trim() || 'Payment proof declined by admin.';
+        try {
+            await API.put(`/admin/orders/${orderId}`, {
+                status: 'Cancelled',
+                cancelReason: finalReason,
+            });
+            setOrders(prev => prev.map(o =>
+                o._id === orderId ? { ...o, status: 'Cancelled', cancelReason: finalReason } : o
+            ));
+            toast.success('Order cancelled. Customer will be notified.');
+        } catch { toast.error('Failed to decline payment'); }
+    };
 
     return (
         <div className="admin-dash-page">
@@ -245,9 +331,16 @@ const AdminDashboard = () => {
                 </div>
                 <div className="admin-header-right">
                     <span className="admin-badge">🟢 Admin</span>
-                    <button className="admin-logout-btn" onClick={handleLogout}>
-                        <FiLogOut size={16} />
-                        Logout
+                    <button
+                        onClick={loadData}
+                        className="admin-refresh-btn"
+                        disabled={loading}
+                        title="Refresh Data"
+                    >
+                        <FiRefreshCw className={loading ? 'spin' : ''} />
+                    </button>
+                    <button onClick={handleLogout} className="admin-logout-btn">
+                        <FiLogOut /> Logout
                     </button>
                 </div>
             </header>
@@ -265,6 +358,14 @@ const AdminDashboard = () => {
                         </button>
                     ))}
                 </div>
+
+                {/* Loading Indicator */}
+                {loading && !stats && tab === 'Stats' && (
+                    <div className="admin-loading-wrap">
+                        <div className="spinner"></div>
+                        <p>Fetching latest stats...</p>
+                    </div>
+                )}
 
                 {/* ── STATS ── */}
                 {tab === 'Stats' && stats && (
@@ -287,6 +388,69 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )}
+
+                {tab === 'Stats' && stats && (
+                    <div className="monthly-stats-container" style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                        {/* Monthly Revenue Section */}
+                        <div className="admin-table-wrap" style={{ margin: 0 }}>
+                            <h3 style={{ padding: '1rem', color: '#10b981' }}>📊 Monthly Revenue Breakdown</h3>
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stats.monthlyRevenue && stats.monthlyRevenue.length > 0 ? (
+                                        stats.monthlyRevenue.map((item, index) => (
+                                            <tr key={index}>
+                                                <td style={{ fontWeight: 600 }}>
+                                                    {new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                                </td>
+                                                <td style={{ color: '#10b981', fontWeight: 700 }}>
+                                                    Rs. {item.revenue.toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr><td colSpan="2" style={{ textAlign: 'center' }}>No revenue data yet</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Monthly Users Section */}
+                        <div className="admin-table-wrap" style={{ margin: 0 }}>
+                            <h3 style={{ padding: '1rem', color: '#3b82f6' }}>👥 Monthly New User Signups</h3>
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>New Users</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stats.monthlyUsers && stats.monthlyUsers.length > 0 ? (
+                                        stats.monthlyUsers.map((item, index) => (
+                                            <tr key={index}>
+                                                <td style={{ fontWeight: 600 }}>
+                                                    {new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                                </td>
+                                                <td style={{ color: '#3b82f6', fontWeight: 700 }}>
+                                                    {item.count}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr><td colSpan="2" style={{ textAlign: 'center' }}>No user data yet</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
                 {tab === 'Stats' && !stats && (
                     <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '3rem' }}>Loading stats…</p>
                 )}
@@ -301,26 +465,129 @@ const AdminDashboard = () => {
                                     <th>Customer</th>
                                     <th>Restaurant</th>
                                     <th>Total</th>
+                                    <th>Payment</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {orders.map(o => (
-                                    <tr key={o._id}>
-                                        <td>{o._id.slice(-8).toUpperCase()}</td>
-                                        <td>{o.user?.name}<br /><small>{o.user?.email}</small></td>
-                                        <td>{o.restaurantName}</td>
-                                        <td>Rs. {o.total}</td>
-                                        <td>
-                                            <select
-                                                value={o.status}
-                                                onChange={e => updateOrderStatus(o._id, e.target.value)}
-                                                className="status-select"
-                                            >
-                                                {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                        </td>
-                                    </tr>
+                                    <React.Fragment key={o._id}>
+                                        <tr style={o.status === 'Payment Pending' ? { background: 'rgba(249,115,22,0.07)', borderLeft: '3px solid #f97316' } : {}}>
+                                            <td>{o.dailyOrderNumber ? `#${o.dailyOrderNumber}` : o._id.slice(-8).toUpperCase()}</td>
+                                            <td>{o.user?.name}<br /><small>{o.user?.email}</small></td>
+                                            <td>{o.restaurantName}</td>
+                                            <td>Rs. {o.total}</td>
+                                            <td>
+                                                <span style={{
+                                                    display: 'inline-block',
+                                                    padding: '0.25rem 0.65rem',
+                                                    borderRadius: '50px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    background: o.paymentMethod === 'COD'
+                                                        ? 'rgba(16,185,129,0.15)'
+                                                        : o.paymentMethod === 'Card'
+                                                            ? 'rgba(99,102,241,0.15)'
+                                                            : 'rgba(249,115,22,0.15)',
+                                                    color: o.paymentMethod === 'COD'
+                                                        ? '#10b981'
+                                                        : o.paymentMethod === 'Card'
+                                                            ? '#818cf8'
+                                                            : '#fb923c',
+                                                    border: `1px solid ${o.paymentMethod === 'COD'
+                                                        ? 'rgba(16,185,129,0.3)'
+                                                        : o.paymentMethod === 'Card'
+                                                            ? 'rgba(99,102,241,0.3)'
+                                                            : 'rgba(249,115,22,0.3)'}`,
+                                                }}>
+                                                    {o.paymentMethod === 'COD' ? '💵 COD'
+                                                        : o.paymentMethod === 'Card' ? '💳 Card'
+                                                            : o.paymentMethod === 'EasyPaisa' ? '📱 EasyPaisa'
+                                                                : o.paymentMethod === 'JazzCash' ? '📱 JazzCash'
+                                                                    : o.paymentMethod || '—'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="status-select-wrapper">
+                                                    <select
+                                                        value={o.status}
+                                                        onChange={e => updateOrderStatus(o._id, e.target.value)}
+                                                        className="status-select"
+                                                        style={{
+                                                            backgroundColor: (STATUS_COLORS[o.status] || '#6b7280') + '22',
+                                                            color: STATUS_COLORS[o.status] || '#6b7280',
+                                                            borderColor: (STATUS_COLORS[o.status] || '#6b7280') + '44',
+                                                            fontWeight: '700'
+                                                        }}
+                                                    >
+                                                        {STATUS_OPTIONS.map(s => (
+                                                            <option key={s} value={s} style={{ backgroundColor: '#1a1a2e', color: '#fff' }}>
+                                                                {s}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <FiChevronDown className="status-chevron" style={{ color: STATUS_COLORS[o.status] || '#6b7280' }} />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {o.status === 'Payment Pending' && (
+                                            <tr style={{ background: 'rgba(249,115,22,0.04)' }}>
+                                                <td colSpan={6} style={{ padding: '0.75rem 1.2rem 1rem' }}>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.5rem' }}>
+                                                        <div style={{ flex: 1, minWidth: 180 }}>
+                                                            <p style={{ fontWeight: 700, color: '#f97316', fontSize: '0.82rem', marginBottom: '0.35rem' }}>
+                                                                🔔 Payment Verification Required
+                                                            </p>
+                                                            {o.mobilePayNumber && (
+                                                                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.65)', margin: '0.1rem 0' }}>
+                                                                    📞 From: <strong style={{ color: '#fff' }}>{o.mobilePayNumber}</strong>
+                                                                </p>
+                                                            )}
+                                                            {o.transactionRef && (
+                                                                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.65)', margin: '0.1rem 0' }}>
+                                                                    🔖 TXN Ref: <strong style={{ color: '#fff', fontFamily: 'monospace', letterSpacing: '0.03em' }}>{o.transactionRef}</strong>
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        {o.paymentProof && (
+                                                            <a href={getImageUrl(o.paymentProof)} target="_blank" rel="noreferrer" title="Click to view full screenshot">
+                                                                <img
+                                                                    src={getImageUrl(o.paymentProof)}
+                                                                    alt="Payment proof"
+                                                                    style={{ width: 88, height: 88, objectFit: 'cover', borderRadius: 10, border: '2px solid #f97316', display: 'block' }}
+                                                                />
+                                                                <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', display: 'block', marginTop: 3 }}>View screenshot</span>
+                                                            </a>
+                                                        )}
+                                                        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                                                            <button
+                                                                onClick={() => confirmPayment(o._id)}
+                                                                style={{
+                                                                    padding: '0.55rem 1.2rem', borderRadius: 10, border: 'none',
+                                                                    background: 'linear-gradient(135deg,#10b981,#059669)',
+                                                                    color: 'white', fontWeight: 700, fontSize: '0.82rem',
+                                                                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
+                                                                }}
+                                                            >
+                                                                ✓ Confirm
+                                                            </button>
+                                                            <button
+                                                                onClick={() => declinePayment(o._id)}
+                                                                style={{
+                                                                    padding: '0.55rem 1.2rem', borderRadius: 10, border: 'none',
+                                                                    background: 'linear-gradient(135deg,#ef4444,#dc2626)',
+                                                                    color: 'white', fontWeight: 700, fontSize: '0.82rem',
+                                                                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
+                                                                }}
+                                                            >
+                                                                ✕ Decline
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>
@@ -367,7 +634,7 @@ const AdminDashboard = () => {
                                                 )}
                                                 <div style={{ lineHeight: 1.2 }}>
                                                     <p style={{ fontWeight: 700, color: '#fff', margin: 0, fontSize: '0.95rem' }}>{rev.foodItem?.name || 'Deleted Product'}</p>
-                                                    <small style={{ color: 'rgba(245, 158, 11, 0.6)', fontWeight: 600, fontSize: '0.75rem' }}>Order #{rev.order?._id?.slice(-8).toUpperCase()}</small>
+                                                    <small style={{ color: 'rgba(245, 158, 11, 0.6)', fontWeight: 600, fontSize: '0.75rem' }}>Order {rev.order?.dailyOrderNumber ? `#${rev.order.dailyOrderNumber}` : `#${rev.order?._id?.slice(-8).toUpperCase()}`}</small>
                                                 </div>
                                             </div>
                                         </td>
@@ -501,6 +768,7 @@ const AdminDashboard = () => {
                                         <th>Price</th>
                                         <th>Discount</th>
                                         <th>Final Price</th>
+                                        <th>Top Rated</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -515,7 +783,7 @@ const AdminDashboard = () => {
                                             : String(disc);
                                         return (
                                             <tr key={f._id}>
-                                                <td><img src={f.image} alt={f.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
+                                                <td><img src={getImageUrl(f.image)} alt={f.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
                                                 <td>{f.name}</td>
                                                 <td>{f.category}</td>
                                                 <td>Rs. {f.price}</td>
@@ -585,6 +853,21 @@ const AdminDashboard = () => {
                                                     )}
                                                 </td>
                                                 <td>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                        <label className="switch">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={f.isTopRated}
+                                                                onChange={() => toggleTopRated(f._id, f.isTopRated)}
+                                                            />
+                                                            <span className="slider round"></span>
+                                                        </label>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: f.isTopRated ? '#a78bfa' : 'rgba(255,255,255,0.4)' }}>
+                                                            {f.isTopRated ? 'Yes' : 'No'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
                                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                         <button className="icon-btn edit" onClick={() => { setEditingFood(f); setShowEditFood(true); }}><FiEdit /></button>
                                                         <button className="icon-btn danger" onClick={() => deleteFood(f._id)}><FiTrash2 /></button>
@@ -616,6 +899,7 @@ const AdminDashboard = () => {
                                     <form onSubmit={addRestaurant} className="auth-form">
                                         <input className="input-field" placeholder="Restaurant Name" value={newRestaurant.name} onChange={e => setNewRestaurant(r => ({ ...r, name: e.target.value }))} required />
                                         <input className="input-field" placeholder="Cuisine (comma separated, e.g. Pizza, Burgers)" value={newRestaurant.cuisine} onChange={e => setNewRestaurant(r => ({ ...r, cuisine: e.target.value }))} required />
+                                        <input className="input-field" placeholder="Address / Location" value={newRestaurant.address} onChange={e => setNewRestaurant(r => ({ ...r, address: e.target.value }))} required />
                                         <input className="input-field" placeholder="Description" value={newRestaurant.description} onChange={e => setNewRestaurant(r => ({ ...r, description: e.target.value }))} />
 
                                         <div style={{ marginBottom: '1rem' }}>
@@ -649,6 +933,7 @@ const AdminDashboard = () => {
                                     <form onSubmit={updateRestaurant} className="auth-form">
                                         <input className="input-field" placeholder="Restaurant Name" value={editingRestaurant.name} onChange={e => setEditingRestaurant(r => ({ ...r, name: e.target.value }))} required />
                                         <input className="input-field" placeholder="Cuisine (comma separated)" value={Array.isArray(editingRestaurant.cuisine) ? editingRestaurant.cuisine.join(', ') : editingRestaurant.cuisine} onChange={e => setEditingRestaurant(r => ({ ...r, cuisine: e.target.value }))} required />
+                                        <input className="input-field" placeholder="Address / Location" value={editingRestaurant.address || ''} onChange={e => setEditingRestaurant(r => ({ ...r, address: e.target.value }))} required />
                                         <input className="input-field" placeholder="Description" value={editingRestaurant.description} onChange={e => setEditingRestaurant(r => ({ ...r, description: e.target.value }))} />
 
                                         <div style={{ marginBottom: '1rem' }}>
@@ -680,17 +965,20 @@ const AdminDashboard = () => {
                                         <th>Image</th>
                                         <th>Name</th>
                                         <th>Cuisine</th>
+                                        <th>Address</th>
                                         <th>Rating</th>
                                         <th>Status</th>
+                                        <th>Popular</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {restaurants.map(r => (
                                         <tr key={r._id}>
-                                            <td><img src={r.image} alt={r.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
+                                            <td><img src={getImageUrl(r.image)} alt={r.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
                                             <td>{r.name}</td>
                                             <td>{r.cuisine.join(', ')}</td>
+                                            <td style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.address || '—'}</td>
                                             <td>⭐ {r.rating}</td>
                                             <td>
                                                 <button
@@ -711,6 +999,21 @@ const AdminDashboard = () => {
                                                 >
                                                     {r.isOpen ? '🟢 Open' : '🔴 Closed'}
                                                 </button>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <label className="switch">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={r.isPopular}
+                                                            onChange={() => togglePopularStatus(r._id, r.isPopular)}
+                                                        />
+                                                        <span className="slider round"></span>
+                                                    </label>
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: r.isPopular ? '#a78bfa' : 'rgba(255,255,255,0.4)' }}>
+                                                        {r.isPopular ? 'Yes' : 'No'}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -793,7 +1096,7 @@ const AdminDashboard = () => {
                                 <tbody>
                                     {categories.map(c => (
                                         <tr key={c._id}>
-                                            <td><img src={c.image} alt={c.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
+                                            <td><img src={getImageUrl(c.image)} alt={c.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
                                             <td>{c.name}</td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -815,6 +1118,7 @@ const AdminDashboard = () => {
                         <table className="admin-table">
                             <thead>
                                 <tr>
+                                    <th>#</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Method</th>
@@ -825,8 +1129,9 @@ const AdminDashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map(u => (
+                                {users.map((u, idx) => (
                                     <tr key={u._id}>
+                                        <td style={{ fontWeight: 700, color: '#f59e0b', width: '3rem', textAlign: 'center' }}>{u.regNumber || (users.length - idx)}</td>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {u.name}

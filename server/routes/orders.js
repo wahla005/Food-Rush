@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const FoodItem = require('../models/FoodItem');
 const Restaurant = require('../models/Restaurant');
 const Order = require('../models/Order');
@@ -8,12 +11,39 @@ const { protect } = require('../middleware/auth');
 // BASE FEE
 const BASE_DELIVERY_FEE = 59;
 
+// ── Multer for payment proof screenshots ──────────────────────────────────────
+const proofStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = 'uploads/payment-proofs/';
+        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `proof-${Date.now()}${path.extname(file.originalname)}`);
+    }
+});
+const uploadProof = multer({
+    storage: proofStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true);
+        else cb(new Error('Only images allowed'), false);
+    }
+});
+
+// POST /api/orders/upload-proof  — upload payment screenshot (protected)
+router.post('/upload-proof', protect, uploadProof.single('proof'), (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    res.json({ url: `/uploads/payment-proofs/${req.file.filename}` });
+});
+
 // POST /api/orders  — place order
 router.post('/', protect, async (req, res) => {
     try {
-        const { restaurantName, items: incomingItems, deliveryAddress, paymentMethod, restaurant } = req.body;
+        const { restaurantName, items: incomingItems, deliveryAddress, paymentMethod, restaurant,
+            transactionRef, mobilePayNumber, paymentProof } = req.body;
 
-        // NEW: Check if user is blocked
+        // Check if user is blocked
         const user = await req.user.constructor.findById(req.user._id);
         if (user.isBlocked) {
             return res.status(403).json({ message: 'Your account is blocked from placing orders due to multiple non-received deliveries.' });
@@ -58,12 +88,26 @@ router.post('/', protect, async (req, res) => {
 
         const validatedTotal = validatedSubtotal + expectedDeliveryFee;
 
-        // NEW: Check minimum order amount
+        // Check minimum order amount
         if (validatedSubtotal < restaurantData.minOrder) {
             return res.status(400).json({
                 message: `Minimum order amount for ${restaurantName} is Rs. ${restaurantData.minOrder}. Please add more items.`
             });
         }
+
+        // Digital wallet orders start as "Payment Pending" until admin confirms
+        const isDigitalWallet = ['EasyPaisa', 'JazzCash'].includes(paymentMethod);
+
+        // Calculate Daily Order Number (Reset every day)
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const dailyCount = await Order.countDocuments({
+            createdAt: { $gte: startOfDay, $lte: endOfDay }
+        });
+        const dailyOrderNumber = dailyCount + 1;
 
         const order = await Order.create({
             user: req.user._id,
@@ -75,6 +119,11 @@ router.post('/', protect, async (req, res) => {
             total: validatedTotal,
             deliveryAddress,
             paymentMethod: paymentMethod || 'COD',
+            status: isDigitalWallet ? 'Payment Pending' : 'Pending',
+            transactionRef: isDigitalWallet ? (transactionRef || null) : null,
+            mobilePayNumber: isDigitalWallet ? (mobilePayNumber || null) : null,
+            paymentProof: isDigitalWallet ? (paymentProof || null) : null,
+            dailyOrderNumber,
         });
 
         res.status(201).json(order);

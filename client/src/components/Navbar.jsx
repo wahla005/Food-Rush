@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX, FiLogOut, FiPackage, FiSettings } from 'react-icons/fi';
+import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX, FiLogOut, FiPackage, FiSettings, FiMoon, FiSun } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
@@ -44,6 +45,8 @@ const Navbar = () => {
         { to: '/orders', label: 'My Orders' },
     ];
 
+    const { isDarkMode, toggleTheme } = useTheme();
+
     return (
         <nav className="navbar">
             <div className="nav-inner">
@@ -75,6 +78,9 @@ const Navbar = () => {
 
                 {/* Cart + Profile */}
                 <div className="nav-actions">
+                    <button onClick={toggleTheme} className="cart-btn" style={{ background: 'transparent', color: isDarkMode ? '#fcd34d' : '#6b7280' }} title="Toggle Theme">
+                        {isDarkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
+                    </button>
                     <Link to="/cart" className="cart-btn">
                         <FiShoppingCart size={20} />
                         {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}
@@ -83,7 +89,13 @@ const Navbar = () => {
                     {/* Profile dropdown — uses click-outside ref, NOT onMouseLeave */}
                     <div className="profile-menu" ref={dropdownRef}>
                         <button className="profile-btn" onClick={() => setProfileOpen(p => !p)}>
-                            <div className="avatar-circle">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
+                            <div className="avatar-circle">
+                                {user?.image ? (
+                                    <img src={`http://localhost:5001${user.image}`} alt={user.name} className="avatar-img" />
+                                ) : (
+                                    user?.name?.[0]?.toUpperCase() || 'U'
+                                )}
+                            </div>
                         </button>
                         {profileOpen && (
                             <div className="dropdown">

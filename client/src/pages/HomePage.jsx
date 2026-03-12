@@ -12,12 +12,19 @@ const HomePage = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const getImageUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        const baseUrl = API.defaults.baseURL.replace('/api', '');
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [rRes, fRes, cRes] = await Promise.all([
-                    API.get('/restaurants'),
-                    API.get('/foods?sort=rating'),
+                    API.get('/restaurants?isPopular=true'),
+                    API.get('/foods?isTopRated=true'),
                     API.get('/categories'),
                 ]);
                 setRestaurants(rRes.data.slice(0, 4));
@@ -66,7 +73,7 @@ const HomePage = () => {
                             <button key={c._id || c.name} className="category-card-small"
                                 onClick={() => navigate(`/menu?category=${c.name}`)}>
                                 <div className="cat-img-wrap">
-                                    <img src={c.image} alt={c.name} />
+                                    <img src={getImageUrl(c.image)} alt={c.name} />
                                 </div>
                                 <span className="cat-name">{c.name}</span>
                             </button>
@@ -90,7 +97,7 @@ const HomePage = () => {
                             {restaurants.map(r => (
                                 <Link key={r._id} to={`/restaurant/${r._id}`} className="restaurant-card">
                                     <div className="rest-img-wrap">
-                                        <img src={r.image} alt={r.name} />
+                                        <img src={getImageUrl(r.image)} alt={r.name} />
                                         {r.isOpen ? <span className="open-badge">Open</span> : <span className="closed-badge">Closed</span>}
                                     </div>
                                     <div className="rest-info">
@@ -122,7 +129,7 @@ const HomePage = () => {
                         <div className="food-grid">
                             {featured.map(f => (
                                 <Link key={f._id} to={`/food/${f._id}`} className="food-card">
-                                    <img src={f.image} alt={f.name} className="food-card-img" />
+                                    <img src={getImageUrl(f.image)} alt={f.name} className="food-card-img" />
                                     <div className="food-card-body">
                                         {f.isVeg && <span className="veg-dot" />}
                                         <h4>{f.name}</h4>

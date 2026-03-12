@@ -47,6 +47,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    image: {
+        type: String,
+        default: null,
+    },
 }, { timestamps: true });
 
 // Hash password before save — skip if no password (Google OAuth users)
@@ -60,5 +64,7 @@ userSchema.pre('save', async function () {
 userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
+
+userSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('User', userSchema);

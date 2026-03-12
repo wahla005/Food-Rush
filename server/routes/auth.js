@@ -4,6 +4,32 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Multer Storage for Profile Pictures
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = 'uploads/profiles/';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `profile-${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for HD images
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true);
+        else cb(new Error('Only images are allowed'), false);
+    }
+});
 
 // Helper: generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -213,15 +239,72 @@ router.get('/me', protect, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// PUT /api/auth/profile  (protected)
-// ─────────────────────────────────────────────
-router.put('/profile', protect, async (req, res) => {
+// POST /api/auth/upload  (protected)
+router.post('/upload', protect, upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+        const imageUrl = `/uploads/profiles/${req.file.filename}`;
+
+        // Update user immediately or just return URL? Let's update user.
+        const user = await User.findById(req.user._id);
+        user.image = imageUrl;
+        await user.save();
+
+        res.json({
+            message: 'Image uploaded',
+            imageUrl,
+            user: { id: user._id, name: user.name, email: user.email, image: user.image }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message || 'Upload failed' });
+    }
+});
+
+// DELETE /api/auth/profile/image  (protected)
+router.delete('/profile/image', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ message: 'User not found' });
-        user.name = req.body.name || user.name;
+
+        // Remove file from filesystem if it exists
+        if (user.image) {
+            const filePath = path.join(__dirname, '..', user.image);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        user.image = null;
         await user.save();
-        res.json({ message: 'Profile updated', user: { id: user._id, name: user.name, email: user.email } });
+
+        res.json({
+            message: 'Profile picture removed',
+            user: { id: user._id, name: user.name, email: user.email, image: user.image }
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/auth/profile  (protected)
+router.put('/profile', protect, async (req, res) => {
+    try {
+        const { name, image } = req.body;
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ message: 'Name cannot be empty' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        user.name = name.trim();
+        if (image !== undefined) user.image = image;
+
+        await user.save();
+        res.json({
+            message: 'Profile updated',
+            user: { id: user._id, name: user.name, email: user.email, image: user.image }
+        });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }

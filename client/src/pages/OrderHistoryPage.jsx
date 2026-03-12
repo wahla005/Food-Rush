@@ -83,9 +83,14 @@ const OrderHistoryPage = () => {
                             <div key={order._id} className="order-card">
                                 <div className="order-card-header">
                                     <div>
-                                        <h3>Order #{order._id.slice(-8).toUpperCase()}</h3>
+                                        <h3>Order {order.dailyOrderNumber ? `#${order.dailyOrderNumber}` : `#${order._id.slice(-8).toUpperCase()}`}</h3>
                                         <p>{order.restaurantName}</p>
                                         <p className="order-date">{new Date(order.createdAt).toLocaleDateString('en-PK', { dateStyle: 'medium' })}</p>
+                                        {order.status === 'Cancelled' && order.cancelReason && (
+                                            <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.4rem', fontWeight: 500 }}>
+                                                Reason: {order.cancelReason}
+                                            </p>
+                                        )}
                                     </div>
                                     <span className="order-status-badge" style={{ backgroundColor: STATUS_COLORS[order.status] }}>
                                         {order.status}
@@ -96,13 +101,13 @@ const OrderHistoryPage = () => {
                                     {order.items.map((item, i) => {
                                         const isRatingThis = ratingActiveKey === `${order._id}-${item.food}`;
                                         return (
-                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', overflow: 'hidden' }}>
+                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', background: 'var(--white)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                                                         {item.image && <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
                                                         <div>
-                                                            <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{item.name}</p>
-                                                            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Quantity: {item.quantity}</p>
+                                                            <p style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--dark)' }}>{item.name}</p>
+                                                            <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Quantity: {item.quantity}</p>
                                                         </div>
                                                     </div>
                                                     {order.status === 'Delivered' && !isRatingThis && (
@@ -141,7 +146,7 @@ const OrderHistoryPage = () => {
                                                                     key={num}
                                                                     size={24}
                                                                     fill={num <= rating ? "#f59e0b" : "none"}
-                                                                    stroke={num <= rating ? "#f59e0b" : "rgba(0,0,0,0.2)"}
+                                                                    stroke={num <= rating ? "#f59e0b" : "var(--gray)"}
                                                                     style={{
                                                                         cursor: 'pointer',
                                                                         transition: 'transform 0.2s',
@@ -153,7 +158,7 @@ const OrderHistoryPage = () => {
                                                         </div>
                                                         <textarea
                                                             className="input-field"
-                                                            style={{ minHeight: '60px', fontSize: '0.85rem', marginBottom: '0.8rem', background: 'rgba(255,255,255,0.05)' }}
+                                                            style={{ minHeight: '60px', fontSize: '0.85rem', marginBottom: '0.8rem', background: 'var(--light-gray)', color: 'var(--dark)' }}
                                                             placeholder={`How was the ${item.name}?`}
                                                             value={comment}
                                                             onChange={e => setComment(e.target.value)}

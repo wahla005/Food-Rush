@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { FcGoogle } from 'react-icons/fc';
+import { useGoogleLogin } from '@react-oauth/google';
 import PasswordInput from '../components/PasswordInput';
 import PasswordStrength from '../components/PasswordStrength';
+import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 
 const slides = [
@@ -13,9 +16,39 @@ const slides = [
 
 const SignupPage = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [activeSlide, setActiveSlide] = useState(0);
     const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (response) => {
+            setGoogleLoading(true);
+            try {
+                // Get user info from Google
+                const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${response.access_token}`);
+                const googleUser = await res.json();
+
+                // Send to backend
+                const { data } = await API.post('/auth/google', {
+                    googleId: googleUser.sub,
+                    email: googleUser.email,
+                    name: googleUser.name
+                });
+
+                login(data.user, data.token);
+                toast.success(`Welcome, ${data.user.name}!`);
+                navigate('/home');
+            } catch (err) {
+                console.error(err);
+                toast.error('Google signup failed');
+            } finally {
+                setGoogleLoading(false);
+            }
+        },
+        onError: () => toast.error('Google signup failed')
+    });
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -94,6 +127,24 @@ const SignupPage = () => {
                                 {loading ? 'Creating...' : 'Create Account'}
                             </button>
                         </form>
+
+                        {/* Divider */}
+                        <div className="divider">
+                            <span className="divider-line" />
+                            <span className="divider-text">or signup with</span>
+                            <span className="divider-line" />
+                        </div>
+
+                        {/* Google button */}
+                        <button
+                            type="button"
+                            className="btn-social"
+                            onClick={() => handleGoogleLogin()}
+                            disabled={googleLoading}
+                        >
+                            <FcGoogle size={22} />
+                            <span>{googleLoading ? 'Connecting...' : 'Continue with Google'}</span>
+                        </button>
 
                         <p className="register-row">
                             Already have an account?{' '}

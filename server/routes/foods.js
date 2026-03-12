@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
         if (req.query.restaurant) filter.restaurant = req.query.restaurant;
         if (req.query.search) filter.name = { $regex: req.query.search, $options: 'i' };
         if (req.query.isVeg) filter.isVeg = req.query.isVeg === 'true';
+        if (req.query.isTopRated) filter.isTopRated = req.query.isTopRated === 'true';
 
         let query = FoodItem.find(filter).populate('restaurant', 'name deliveryTime');
         if (req.query.sort === 'price_asc') query = query.sort({ price: 1 });

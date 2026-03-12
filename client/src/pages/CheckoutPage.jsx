@@ -29,6 +29,16 @@ const CheckoutPage = () => {
     const [minOrder, setMinOrder] = useState(0);
     const [restDeliveryFee, setRestDeliveryFee] = useState(BASE_DELIVERY_FEE);
     const [promoLoading, setPromoLoading] = useState(true);
+    const [copiedAccount, setCopiedAccount] = useState(false);
+    const [uploadingProof, setUploadingProof] = useState(false);
+    const [paymentProofUrl, setPaymentProofUrl] = useState(null); // uploaded screenshot URL
+    const [paymentProofPreview, setPaymentProofPreview] = useState(null); // local preview
+
+    // Merchant payment accounts (in production, these come from backend/env)
+    const PAYMENT_ACCOUNTS = {
+        EasyPaisa: { number: '0300-1234567', name: 'Food Rush Payments' },
+        JazzCash: { number: '0321-7654321', name: 'Food Rush Payments' },
+    };
 
     const [form, setForm] = useState({
         fullName: user?.name || '',
@@ -36,6 +46,8 @@ const CheckoutPage = () => {
         address: '',
         city: '',
         paymentMethod: 'COD',
+        mobilePayNumber: '',   // user's own EasyPaisa/JazzCash number
+        transactionRef: '',    // transaction ID/ref after payment
     });
 
     // ── Decide what items to checkout ──────────────────────────────────────────
@@ -85,11 +97,46 @@ const CheckoutPage = () => {
     // ── Count active promos for display ──────────────────────────────────
     const pizzaPromoItems = enrichedCart.filter(i => i.hasPizzaPromo);
 
+    // Pakistani phone format: 03XX-XXXXXXX (11 digits)
+    const PK_PHONE_REGEX = /^03\d{2}-\d{7}$/;
+
     const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+    const handlePhoneChange = (e) => {
+        let val = e.target.value.replace(/[^\d-]/g, ''); // only digits and dash
+        // Strip all dashes for raw digit computation
+        const digits = val.replace(/-/g, '');
+        // Limit to 11 digits
+        const clipped = digits.slice(0, 11);
+        // Auto-format: insert dash after 4th digit
+        const formatted = clipped.length > 4
+            ? clipped.slice(0, 4) + '-' + clipped.slice(4)
+            : clipped;
+        setForm(f => ({ ...f, phone: formatted }));
+    };
 
     const handleOrder = async (e) => {
         e.preventDefault();
         if (!form.phone || !form.address || !form.city) { toast.error('Fill in all fields'); return; }
+        if (!PK_PHONE_REGEX.test(form.phone)) {
+            toast.error('Enter a valid Pakistani number (e.g. 0300-1234567)');
+            return;
+        }
+        // Validate digital wallet fields
+        if (['EasyPaisa', 'JazzCash'].includes(form.paymentMethod)) {
+            if (!PK_PHONE_REGEX.test(form.mobilePayNumber)) {
+                toast.error(`Enter your registered ${form.paymentMethod} number (e.g. 0300-1234567)`);
+                return;
+            }
+            if (!form.transactionRef.trim()) {
+                toast.error('Enter the Transaction ID / Reference number after paying');
+                return;
+            }
+            if (!paymentProofUrl) {
+                toast.error('Please upload a screenshot of your payment');
+                return;
+            }
+        }
         setLoading(true);
         try {
             const items = enrichedCart.map(i => ({
@@ -111,6 +158,10 @@ const CheckoutPage = () => {
                 total: grandTotal,
                 deliveryAddress: { fullName: form.fullName, phone: form.phone, address: form.address, city: form.city },
                 paymentMethod: form.paymentMethod,
+                // Digital wallet fields
+                transactionRef: form.transactionRef || undefined,
+                mobilePayNumber: form.mobilePayNumber || undefined,
+                paymentProof: paymentProofUrl || undefined,
                 promos: {
                     freeDelivery: isFirstOrder,
                     pizzaDiscount: pizzaPromoItems.length > 0,
@@ -172,7 +223,16 @@ const CheckoutPage = () => {
                         <h3>📍 Delivery Address</h3>
                         <div className="form-row">
                             <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} className="input-field" required />
-                            <input name="phone" placeholder="Phone Number" value={form.phone} onChange={handleChange} className="input-field" required />
+                            <input
+                                name="phone"
+                                placeholder="03XX-XXXXXXX"
+                                value={form.phone}
+                                onChange={handlePhoneChange}
+                                className="input-field"
+                                inputMode="numeric"
+                                maxLength={12}
+                                required
+                            />
                         </div>
                         <input name="address" placeholder="Street Address" value={form.address} onChange={handleChange} className="input-field" required />
                         <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="input-field" required />
@@ -195,6 +255,162 @@ const CheckoutPage = () => {
                                 </div>
                             </div>
                         )}
+
+                        {/* ── EasyPaisa / JazzCash Instructions ── */}
+                        {['EasyPaisa', 'JazzCash'].includes(form.paymentMethod) && (() => {
+                            const acct = PAYMENT_ACCOUNTS[form.paymentMethod];
+                            const isEP = form.paymentMethod === 'EasyPaisa';
+                            const brand = isEP ? '#00a651' : '#e60026';
+                            const brandLight = isEP ? 'rgba(0,166,81,0.12)' : 'rgba(230,0,38,0.1)';
+                            const handleMobilePayPhone = (e) => {
+                                const digits = e.target.value.replace(/[^\d]/g, '').slice(0, 11);
+                                const fmt = digits.length > 4 ? digits.slice(0, 4) + '-' + digits.slice(4) : digits;
+                                setForm(f => ({ ...f, mobilePayNumber: fmt }));
+                            };
+                            return (
+                                <div style={{
+                                    background: brandLight,
+                                    border: `1.5px solid ${brand}44`,
+                                    borderRadius: 14,
+                                    padding: '1.2rem 1.4rem',
+                                    marginTop: '0.75rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.9rem',
+                                }}>
+                                    {/* Step 1: Send money to merchant */}
+                                    <div>
+                                        <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
+                                            📲 Step 1 — Send Rs. {grandTotal} to our {form.paymentMethod} account:
+                                        </p>
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', gap: '0.7rem',
+                                            background: 'white', borderRadius: 10,
+                                            padding: '0.65rem 1rem',
+                                            border: `1.5px solid ${brand}55`,
+                                        }}>
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ fontWeight: 800, fontSize: '1.1rem', color: '#111', margin: 0 }}>{acct.number}</p>
+                                                <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>{acct.name}</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(acct.number);
+                                                    setCopiedAccount(true);
+                                                    setTimeout(() => setCopiedAccount(false), 2000);
+                                                    toast.success('Account number copied!');
+                                                }}
+                                                style={{
+                                                    padding: '0.35rem 0.85rem', borderRadius: 8, border: 'none',
+                                                    background: brand, color: 'white',
+                                                    fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer',
+                                                }}
+                                            >
+                                                {copiedAccount ? '✓ Copied' : 'Copy'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 2: Enter registered number */}
+                                    <div>
+                                        <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
+                                            📞 Step 2 — Enter your registered {form.paymentMethod} number:
+                                        </p>
+                                        <input
+                                            className="input-field"
+                                            placeholder="03XX-XXXXXXX"
+                                            value={form.mobilePayNumber}
+                                            onChange={handleMobilePayPhone}
+                                            inputMode="numeric"
+                                            maxLength={12}
+                                            required
+                                            style={{ background: 'white', color: '#111', borderColor: brand + '55' }}
+                                        />
+                                    </div>
+
+                                    {/* Step 3: Enter TXN reference */}
+                                    <div>
+                                        <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
+                                            🔖 Step 3 — Enter Transaction ID / Reference number:
+                                        </p>
+                                        <input
+                                            className="input-field"
+                                            placeholder="e.g. EP1234567890 or JC9876543210"
+                                            value={form.transactionRef}
+                                            onChange={e => setForm(f => ({ ...f, transactionRef: e.target.value }))}
+                                            required
+                                            style={{ background: 'white', color: '#111', borderColor: brand + '55' }}
+                                        />
+                                        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.3rem' }}>
+                                            ℹ️ You'll find the Transaction ID in your {form.paymentMethod} app under "Transaction History".
+                                        </p>
+                                    </div>
+
+                                    {/* Step 4: Upload screenshot */}
+                                    <div>
+                                        <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
+                                            📸 Step 4 — Upload a screenshot of your payment:
+                                        </p>
+                                        <label style={{
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                            gap: '0.5rem', padding: '1rem',
+                                            border: `2px dashed ${paymentProofUrl ? brand : '#d1d5db'}`,
+                                            borderRadius: 12, cursor: 'pointer',
+                                            background: paymentProofUrl ? (brandLight) : 'white',
+                                            transition: 'all 0.2s',
+                                        }}>
+                                            {paymentProofPreview ? (
+                                                <img src={paymentProofPreview} alt="Proof preview" style={{ maxHeight: 140, borderRadius: 8, objectFit: 'contain' }} />
+                                            ) : (
+                                                <>
+                                                    <span style={{ fontSize: '2rem' }}>🖼️</span>
+                                                    <span style={{ fontSize: '0.82rem', color: '#6b7280', fontWeight: 500 }}>
+                                                        {uploadingProof ? 'Uploading...' : 'Click to choose screenshot'}
+                                                    </span>
+                                                </>
+                                            )}
+                                            <input type="file" accept="image/*" style={{ display: 'none' }}
+                                                onChange={async (ev) => {
+                                                    const file = ev.target.files[0];
+                                                    if (!file) return;
+                                                    // Show local preview immediately
+                                                    setPaymentProofPreview(URL.createObjectURL(file));
+                                                    // Upload to server
+                                                    setUploadingProof(true);
+                                                    try {
+                                                        const fd = new FormData();
+                                                        fd.append('proof', file);
+                                                        const { data } = await API.post('/orders/upload-proof', fd, {
+                                                            headers: { 'Content-Type': 'multipart/form-data' }
+                                                        });
+                                                        setPaymentProofUrl(data.url);
+                                                        toast.success('Screenshot uploaded!');
+                                                    } catch {
+                                                        toast.error('Upload failed. Try again.');
+                                                        setPaymentProofPreview(null);
+                                                    } finally {
+                                                        setUploadingProof(false);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                        {paymentProofUrl && (
+                                            <p style={{ fontSize: '0.75rem', color: brand, marginTop: '0.3rem', fontWeight: 600 }}>
+                                                ✓ Screenshot uploaded. Admin will verify before confirming.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Warning notice */}
+                                    <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '0.7rem 1rem' }}>
+                                        <p style={{ fontSize: '0.8rem', color: '#92400e', margin: 0, fontWeight: 600 }}>
+                                            ⏳ Note: Your order status will be <strong>"Payment Pending"</strong> until the admin verifies your payment. You'll be notified once confirmed.
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })()}
                         <button
                             type="submit"
                             className="btn-orange"

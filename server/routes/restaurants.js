@@ -6,7 +6,9 @@ const FoodItem = require('../models/FoodItem');
 // GET /api/restaurants
 router.get('/', async (req, res) => {
     try {
-        const restaurants = await Restaurant.find();
+        let filter = {};
+        if (req.query.isPopular === 'true') filter.isPopular = true;
+        const restaurants = await Restaurant.find(filter);
         res.json(restaurants);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });

@@ -13,4 +13,19 @@ API.interceptors.request.use((config) => {
     return config;
 });
 
+// Handle 401 (Unauthorized) responses
+API.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Only redirect if NOT already on login page to avoid loops
+            if (!window.location.pathname.includes('/login')) {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default API;

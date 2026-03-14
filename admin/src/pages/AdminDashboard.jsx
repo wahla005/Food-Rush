@@ -153,7 +153,8 @@ const AdminDashboard = () => {
             setFormData(prev => ({ ...prev, image: imageUrl }));
             toast.success('Image uploaded successfully');
         } catch (err) {
-            toast.error('Image upload failed');
+            const msg = err.response?.data?.message || 'Image upload failed';
+            toast.error(msg);
         } finally {
             setUploading(false);
         }
@@ -206,7 +207,10 @@ const AdminDashboard = () => {
             setShowEditRestaurant(false);
             setEditingRestaurant(null);
             toast.success('Restaurant updated');
-        } catch { toast.error('Failed to update'); }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to update';
+            toast.error(msg);
+        }
     };
 
     const addCategory = async (e) => {
@@ -237,7 +241,10 @@ const AdminDashboard = () => {
             setShowEditFood(false);
             setEditingFood(null);
             toast.success('Food item updated');
-        } catch { toast.error('Failed to update'); }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to update';
+            toast.error(msg);
+        }
     };
 
     const updateCategory = async (e) => {
@@ -248,7 +255,10 @@ const AdminDashboard = () => {
             setShowEditCategory(false);
             setEditingCategory(null);
             toast.success('Category updated');
-        } catch { toast.error('Failed to update'); }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to update';
+            toast.error(msg);
+        }
     };
 
     const toggleUserBlock = async (id, isBlocked) => {

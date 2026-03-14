@@ -39,12 +39,18 @@ const ADMIN_PASSWORD = 'faizan123';
 // POST /api/admin/login
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password)
+    console.log(`🔑 Admin login attempt for: ${email}`);
+
+    if (!email || !password) {
         return res.status(400).json({ message: 'Email and password required' });
+    }
 
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD)
+    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+        console.warn(`❌ Admin login failed for: ${email}`);
         return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
 
+    console.log(`✅ Admin logged in: ${email}`);
     const token = jwt.sign({ email: ADMIN_EMAIL, role: 'admin' }, ADMIN_JWT_SECRET, { expiresIn: '8h' });
     res.json({ token, admin: { email: ADMIN_EMAIL, name: 'Admin' } });
 });
@@ -186,9 +192,12 @@ router.post('/foods', adminProtect, async (req, res) => {
 router.put('/foods/:id', adminProtect, async (req, res) => {
     try {
         const food = await FoodItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!food) return res.status(404).json({ message: 'Food item not found' });
+        console.log(`✅ Food updated: ${food.name}`);
         res.json(food);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('❌ Food Update Error:', err);
+        res.status(500).json({ message: 'Server error: ' + err.message });
     }
 });
 
@@ -217,9 +226,11 @@ router.put('/restaurants/:id', adminProtect, async (req, res) => {
     try {
         const r = await Restaurant.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!r) return res.status(404).json({ message: 'Restaurant not found' });
+        console.log(`✅ Restaurant updated: ${r.name}`);
         res.json(r);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('❌ Restaurant Update Error:', err);
+        res.status(500).json({ message: 'Server error: ' + err.message });
     }
 });
 
@@ -275,10 +286,20 @@ router.get('/stats', adminProtect, async (req, res) => {
 // ─────────────────────────────────────────────
 // Image Upload Route
 // ─────────────────────────────────────────────
-router.post('/upload', adminProtect, upload.single('image'), (req, res) => {
-    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    const filePath = `/uploads/${req.file.filename}`;
-    res.json({ url: filePath });
+router.post('/upload', adminProtect, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('❌ Upload Error:', err);
+            return res.status(500).json({ message: 'Upload failed: ' + err.message });
+        }
+        if (!req.file) {
+            console.warn('⚠️ No file provided in upload request');
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        const filePath = `/uploads/${req.file.filename}`;
+        console.log(`✅ File uploaded successfully: ${filePath}`);
+        res.json({ url: filePath });
+    });
 });
 
 // DELETE /api/admin/restaurants/:id

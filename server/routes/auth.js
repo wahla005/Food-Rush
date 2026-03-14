@@ -139,24 +139,38 @@ router.post('/verify-otp', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        if (!email || !password)
+        console.log(`🔑 Client login attempt for: ${email}`);
+
+        if (!email || !password) {
+            console.warn('⚠️ Missing email or password in login request');
             return res.status(400).json({ message: 'All fields are required' });
+        }
 
         const user = await User.findOne({ email });
-        if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-        if (!user.isVerified)
+        if (!user) {
+            console.warn(`❌ User not found: ${email}`);
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        if (!user.isVerified) {
+            console.warn(`⚠️ User not verified: ${email}`);
             return res.status(401).json({ message: 'Please verify your email first' });
+        }
 
         const isMatch = await user.matchPassword(password);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+        if (!isMatch) {
+            console.warn(`❌ Password mismatch for: ${email}`);
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
 
+        console.log(`✅ Client logged in: ${email}`);
         const token = generateToken(user._id);
         res.json({
             token,
             user: { id: user._id, name: user.name, email: user.email },
         });
     } catch (err) {
-        console.error(err);
+        console.error('❌ Client Login Error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });

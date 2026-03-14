@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -51,8 +52,9 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="nav-inner">
                 {/* Logo */}
-                <Link to="/home" className="nav-logo">
-                    🍔 <span>FoodRush</span>
+                <Link to="/home" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={logo} alt="Food Rush Logo" style={{ height: '40px', objectFit: 'contain' }} />
+                    <span>FoodRush</span>
                 </Link>
 
                 {/* Search */}

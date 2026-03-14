@@ -7,4 +7,8 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@react-oauth/google'],
   },
+  server: {
+    host: true,
+    allowedHosts: 'all'
+  }
 })

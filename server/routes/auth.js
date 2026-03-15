@@ -157,6 +157,45 @@ router.post('/register', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
+// POST /api/auth/resend-otp
+// ─────────────────────────────────────────────
+router.post('/resend-otp', async (req, res) => {
+    try {
+        const { email, type } = req.body; // type: 'register' or 'reset'
+        if (!email) return res.status(400).json({ message: 'Email is required' });
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+        if (type === 'reset') {
+            user.resetOtp = otp;
+            user.resetOtpExpiry = otpExpiry;
+        } else {
+            if (user.isVerified) return res.status(400).json({ message: 'Account already verified' });
+            user.otp = otp;
+            user.otpExpiry = otpExpiry;
+        }
+
+        await user.save();
+
+        // Send Email
+        sendEmail({
+            email: user.email,
+            subject: type === 'reset' ? 'Food Rush - Password Reset OTP' : 'Food Rush - Verify Your Account',
+            message: `Hi ${user.name},\n\nYour new OTP is: ${otp}\n\nThis code will expire in 10 minutes.`,
+        }).catch(err => console.error('Background Email Error (Resend):', err.message));
+
+        res.json({ message: 'New OTP sent to your email!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// ─────────────────────────────────────────────
 // POST /api/auth/verify-otp
 // ─────────────────────────────────────────────
 router.post('/verify-otp', async (req, res) => {

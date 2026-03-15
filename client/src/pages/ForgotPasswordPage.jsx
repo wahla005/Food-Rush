@@ -76,6 +76,22 @@ const ForgotPasswordPage = () => {
         }
     };
 
+    const handleResendOtp = async () => {
+        if (!canResend) return;
+        setLoading(true);
+        try {
+            await API.post('/auth/resend-otp', { email, type: 'reset' });
+            toast.success('New reset OTP sent to your email!');
+            setTimer(60);
+            setCanResend(false);
+            setOtp(['', '', '', '', '', '']);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to resend OTP');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // ── Step 3: Reset Password ──
     const handleResetPassword = async (e) => {
         e.preventDefault();

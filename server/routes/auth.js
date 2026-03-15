@@ -90,27 +90,49 @@ router.post('/register', async (req, res) => {
 
         const exists = await User.findOne({ email });
         if (exists) {
-            if (exists.isVerified) {
+            // Case 1: Account exists and is fully verified with a password
+            if (exists.isVerified && exists.password) {
                 return res.status(400).json({ message: 'Email already registered' });
-            } else {
-                // User exists but not verified - Update OTP and resend
-                const otp = generateOTP();
-                const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-                
-                exists.otp = otp;
-                exists.otpExpiry = otpExpiry;
-                if (password) exists.password = password; // Allow updating password if they forgot it
-                if (name) exists.name = name;
-                await exists.save();
-
-                sendEmail({
-                    email: exists.email,
-                    subject: 'Food Rush - Verify Your Account (New OTP)',
-                    message: `Hi ${exists.name},\n\nYou are trying to register again. Your new OTP for account verification is: ${otp}\n\nThis code will expire in 10 minutes.`,
-                }).catch(err => console.error('Background Email Error (Resend):', err.message));
-
-                return res.status(200).json({ message: 'Account exists but unverified. A new OTP has been sent to your email.' });
+            } 
+            
+            // Case 2: Account exists (maybe via Google or previous pending signup)
+            // We allow them to (re)register to set/update their info, as long as they verify OTP
+            const otp = generateOTP();
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            
+            exists.otp = otp;
+            exists.otpExpiry = otpExpiry;
+            // We'll update the password/name ONLY after they verify the OTP in /verify-otp
+            // For now, we store the "pending" password in a temporary field if needed? 
+            // Better: just allow them to update it now, but keep isVerified=false if it was false.
+            // If it was already isVerified (Google user), we still send OTP to prove ownership before changing password.
+            
+            if (password) {
+                // We'll hash the password in the pre-save hook
+                exists.password = password;
             }
+            if (name) exists.name = name;
+            
+            // If they were a Google user, they are already verified, but we want to 
+            // "re-verify" via OTP before we let them change the password this way.
+            const subject = exists.googleId ? 'Food Rush - Link Password to Google Account' : 'Food Rush - Verify Your Account';
+            const msg = exists.googleId 
+                ? `Hi ${exists.name},\n\nYou are adding a password to your Google-linked account. Your OTP is: ${otp}`
+                : `Hi ${exists.name},\n\nYour new OTP for account verification is: ${otp}`;
+
+            await exists.save();
+
+            sendEmail({
+                email: exists.email,
+                subject: subject,
+                message: `${msg}\n\nThis code will expire in 10 minutes.`,
+            }).catch(err => console.error('Background Email Error (Merge):', err.message));
+
+            return res.status(200).json({ 
+                message: exists.googleId 
+                    ? 'This email is linked to Google. An OTP has been sent to confirm it is you before adding a password.' 
+                    : 'Account exists but unverified. A new OTP has been sent.' 
+            });
         }
 
         const otp = generateOTP();

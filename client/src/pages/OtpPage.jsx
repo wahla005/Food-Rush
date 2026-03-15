@@ -139,5 +139,3 @@ const OtpPage = () => {
 };
 
 export default OtpPage;
-
-export default OtpPage;

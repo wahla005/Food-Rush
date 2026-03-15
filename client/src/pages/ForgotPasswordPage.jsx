@@ -14,6 +14,21 @@ const ForgotPasswordPage = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [timer, setTimer] = useState(60);
+    const [canResend, setCanResend] = useState(false);
+
+    React.useEffect(() => {
+        let interval;
+        if (step === 2 && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setCanResend(true);
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [step, timer]);
 
     // ── Step 1: Send OTP ──
     const handleSendOtp = async (e) => {
@@ -142,6 +157,19 @@ const ForgotPasswordPage = () => {
                             <button type="submit" className="btn-primary" disabled={loading}>
                                 {loading ? 'Verifying...' : 'Verify OTP'}
                             </button>
+
+                            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                                {canResend ? (
+                                    <p className="register-row">
+                                        Didn't receive code?{' '}
+                                        <span className="register-link" style={{ cursor: 'pointer' }} onClick={handleResendOtp}>
+                                            Resend OTP
+                                        </span>
+                                    </p>
+                                ) : (
+                                    <p className="auth-subtitle">Resend code in {timer}s</p>
+                                )}
+                            </div>
                         </form>
                     </>
                 )}

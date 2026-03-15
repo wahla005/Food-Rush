@@ -18,7 +18,6 @@ const STATUS_COLORS = {
 const OrderHistoryPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showRateModal, setShowRateModal] = useState(false);
     const [ratingActiveKey, setRatingActiveKey] = useState(null); // 'orderId-foodId'
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');

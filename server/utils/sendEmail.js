@@ -1,25 +1,31 @@
 const nodemailer = require('nodemailer');
 
-const sendEmail = async ({ email, subject, message }) => {
-    // 1. Create a transporter
-    const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+// Create transporter once and reuse it (Connection Pooling)
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+    // Add timeouts to prevent hanging the server
+    connectionTimeout: 5000, 
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
+});
 
-    // 2. Define email options
+const sendEmail = async ({ email, subject, message }) => {
+    // Define email options
     const mailOptions = {
-        from: `Food Rush <${process.env.EMAIL_USER}>`,
+        from: `"Food Rush" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: subject,
         text: message,
     };
 
-    // 3. Actually send the email
-    await transporter.sendMail(mailOptions);
+    // Send the email
+    return transporter.sendMail(mailOptions);
 };
 
 module.exports = sendEmail;

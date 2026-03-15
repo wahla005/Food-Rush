@@ -97,18 +97,16 @@ router.post('/register', async (req, res) => {
 
         const user = await User.create({ name, email, password, otp, otpExpiry });
 
-        // Send Real Email instead of just console log
-        try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Food Rush - Verify Your Account',
-                message: `Hi ${user.name},\n\nYour OTP for account verification is: ${otp}\n\nThis code will expire in 10 minutes.\n\nEnjoy Food Rush!`,
-            });
-            res.status(201).json({ message: 'OTP sent to your email. Please verify your account.' });
-        } catch (emailErr) {
-            console.error('Email sending failed:', emailErr);
-            res.status(201).json({ message: 'User registered, but email failed. Check server console for OTP.' });
-        }
+        // Send Real Email immediately but don't hold up the user if it's slow
+        sendEmail({
+            email: user.email,
+            subject: 'Food Rush - Verify Your Account',
+            message: `Hi ${user.name},\n\nYour OTP for account verification is: ${otp}\n\nThis code will expire in 10 minutes.\n\nEnjoy Food Rush!`,
+        }).catch(err => console.error('Background Email Error (Register):', err.message));
+
+        res.status(201).json({ 
+            message: 'Registration successful! If you do not see the OTP email in 1 minute, check your Spam folder or Render logs.' 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -198,17 +196,13 @@ router.post('/forgot-password', async (req, res) => {
         await user.save();
 
         // Send Real Reset Email
-        try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Food Rush - Password Reset OTP',
-                message: `Hi ${user.name},\n\nYour OTP for password reset is: ${otp}\n\nThis code will expire in 10 minutes.`,
-            });
-            res.json({ message: 'Password reset OTP sent to your email.' });
-        } catch (emailErr) {
-            console.error('Reset Email failed:', emailErr);
-            res.json({ message: 'Reset OTP generated, but email failed. Check server console.' });
-        }
+        sendEmail({
+            email: user.email,
+            subject: 'Food Rush - Password Reset OTP',
+            message: `Hi ${user.name},\n\nYour OTP for password reset is: ${otp}\n\nThis code will expire in 10 minutes.`,
+        }).catch(err => console.error('Background Email Error (Reset):', err.message));
+
+        res.json({ message: 'If this email exists, an OTP has been sent. Please check your inbox or Spam.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

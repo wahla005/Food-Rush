@@ -3,16 +3,19 @@ const nodemailer = require('nodemailer');
 // Create transporter once and reuse it (Connection Pooling)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL
+    port: 587,
+    secure: false, // Use STARTTLS (standard for Render/Vercel)
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
     // Add timeouts to prevent hanging the server
-    connectionTimeout: 5000, 
-    greetingTimeout: 5000,
-    socketTimeout: 10000,
+    connectionTimeout: 10000, 
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+    tls: {
+        rejectUnauthorized: false // Helps with some cloud network restrictions
+    }
 });
 
 const sendEmail = async ({ email, subject, message }) => {

@@ -16,6 +16,8 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async ({ email, subject, message }) => {
+    console.log(`📧 Attempting to send email to: ${email}`);
+    
     // Define email options
     const mailOptions = {
         from: `"Food Rush" <${process.env.EMAIL_USER}>`,
@@ -24,8 +26,14 @@ const sendEmail = async ({ email, subject, message }) => {
         text: message,
     };
 
-    // Send the email
-    return transporter.sendMail(mailOptions);
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully! MessageID: ${info.messageId}`);
+        return info;
+    } catch (error) {
+        console.error(`❌ Email Send Error: ${error.message}`);
+        throw error;
+    }
 };
 
 module.exports = sendEmail;

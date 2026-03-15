@@ -89,8 +89,29 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
 
         const exists = await User.findOne({ email });
-        if (exists)
-            return res.status(400).json({ message: 'Email already registered' });
+        if (exists) {
+            if (exists.isVerified) {
+                return res.status(400).json({ message: 'Email already registered' });
+            } else {
+                // User exists but not verified - Update OTP and resend
+                const otp = generateOTP();
+                const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+                
+                exists.otp = otp;
+                exists.otpExpiry = otpExpiry;
+                if (password) exists.password = password; // Allow updating password if they forgot it
+                if (name) exists.name = name;
+                await exists.save();
+
+                sendEmail({
+                    email: exists.email,
+                    subject: 'Food Rush - Verify Your Account (New OTP)',
+                    message: `Hi ${exists.name},\n\nYou are trying to register again. Your new OTP for account verification is: ${otp}\n\nThis code will expire in 10 minutes.`,
+                }).catch(err => console.error('Background Email Error (Resend):', err.message));
+
+                return res.status(200).json({ message: 'Account exists but unverified. A new OTP has been sent to your email.' });
+            }
+        }
 
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins

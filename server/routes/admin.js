@@ -8,27 +8,7 @@ const FoodItem = require('../models/FoodItem');
 const Restaurant = require('../models/Restaurant');
 const Category = require('../models/Category');
 const { adminProtect, ADMIN_JWT_SECRET } = require('../middleware/adminAuth');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-// ─────────────────────────────────────────────
-// Multer Configuration for Gallery Uploads
-// ─────────────────────────────────────────────
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = 'uploads/';
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath);
-        }
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ storage });
+const { upload } = require('../config/cloudinary');
 
 // ─────────────────────────────────────────────
 // Hardcoded admin credentials
@@ -284,22 +264,17 @@ router.get('/stats', adminProtect, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// Image Upload Route
+// Image Upload Route (Cloudinary)
 // ─────────────────────────────────────────────
-router.post('/upload', adminProtect, (req, res, next) => {
-    upload.single('image')(req, res, (err) => {
-        if (err) {
-            console.error('❌ Upload Error:', err);
-            return res.status(500).json({ message: 'Upload failed: ' + err.message });
-        }
-        if (!req.file) {
-            console.warn('⚠️ No file provided in upload request');
-            return res.status(400).json({ message: 'No file uploaded' });
-        }
-        const filePath = `/uploads/${req.file.filename}`;
-        console.log(`✅ File uploaded successfully: ${filePath}`);
-        res.json({ url: filePath });
-    });
+router.post('/upload', adminProtect, upload.single('image'), (req, res) => {
+    if (!req.file) {
+        console.warn('⚠️ No file provided in upload request');
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+    // Cloudinary returns the secure_url in req.file.path when using multer-storage-cloudinary
+    const imageUrl = req.file.path;
+    console.log(`✅ File uploaded to Cloudinary: ${imageUrl}`);
+    res.json({ url: imageUrl });
 });
 
 // DELETE /api/admin/restaurants/:id

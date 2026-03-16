@@ -4,33 +4,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const sendEmail = require('../utils/sendEmail');
-
-// Multer Storage for Profile Pictures
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = 'uploads/profiles/';
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `profile-${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-
-const upload = multer({
-    storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for HD images
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) cb(null, true);
-        else cb(new Error('Only images are allowed'), false);
-    }
-});
+const { upload } = require('../config/cloudinary');
 
 // Helper: generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -346,15 +320,16 @@ router.get('/me', protect, async (req, res) => {
 router.post('/upload', protect, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-        const imageUrl = `/uploads/profiles/${req.file.filename}`;
+        
+        const imageUrl = req.file.path; // Cloudinary secure URL
 
-        // Update user immediately or just return URL? Let's update user.
+        // Update user immediately
         const user = await User.findById(req.user._id);
         user.image = imageUrl;
         await user.save();
 
         res.json({
-            message: 'Image uploaded',
+            message: 'Profile picture uploaded to Cloudinary',
             imageUrl,
             user: { id: user._id, name: user.name, email: user.email, image: user.image }
         });
@@ -369,19 +344,13 @@ router.delete('/profile/image', protect, async (req, res) => {
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        // Remove file from filesystem if it exists
-        if (user.image) {
-            const filePath = path.join(__dirname, '..', user.image);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
-
+        // Note: For now we just remove the URL from DB. 
+        // Real deletion from Cloudinary would require pulling the public_id from the URL.
         user.image = null;
         await user.save();
 
         res.json({
-            message: 'Profile picture removed',
+            message: 'Profile picture removed from profile',
             user: { id: user._id, name: user.name, email: user.email, image: user.image }
         });
     } catch (err) {

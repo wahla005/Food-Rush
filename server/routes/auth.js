@@ -125,8 +125,8 @@ router.post('/register', async (req, res) => {
             message: 'Registration successful! If you do not see the OTP email in 1 minute, check your Spam folder or Render logs.' 
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('❌ Registration Error:', err);
+        res.status(500).json({ message: 'Server error: ' + err.message });
     }
 });
 

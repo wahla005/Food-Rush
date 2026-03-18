@@ -7,7 +7,7 @@ const sendEmail = async ({ email, subject, message }) => {
     
     try {
         const { data, error } = await resend.emails.send({
-            from: 'Food Rush <onboarding@resend.dev>',
+            from: 'Food Rush <no-reply@send.softwares.software>',
             to: email,
             subject: subject,
             text: message,

@@ -142,6 +142,20 @@ router.post('/resend-otp', async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
+        // 10-minute Resend Cooldown
+        const waitTime = 10 * 60 * 1000;
+        const currentExpiry = type === 'reset' ? user.resetOtpExpiry : user.otpExpiry;
+        if (currentExpiry) {
+            const lastSent = currentExpiry.getTime() - waitTime;
+            const timePassed = Date.now() - lastSent;
+            if (timePassed < waitTime) {
+                const minutesLeft = Math.ceil((waitTime - timePassed) / 60000);
+                return res.status(400).json({ 
+                    message: `Please wait ${minutesLeft} minute(s) before requesting another OTP.` 
+                });
+            }
+        }
+
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -245,6 +259,19 @@ router.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: 'No account found with this email' });
+
+        // 10-minute Resend Cooldown
+        const waitTime = 10 * 60 * 1000;
+        if (user.resetOtpExpiry) {
+            const lastSent = user.resetOtpExpiry.getTime() - waitTime;
+            const timePassed = Date.now() - lastSent;
+            if (timePassed < waitTime) {
+                const minutesLeft = Math.ceil((waitTime - timePassed) / 60000);
+                return res.status(400).json({ 
+                    message: `An OTP was already sent. Please wait ${minutesLeft} minute(s) before trying again.` 
+                });
+            }
+        }
 
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);

@@ -14,7 +14,7 @@ const ForgotPasswordPage = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [timer, setTimer] = useState(60);
+    const [timer, setTimer] = useState(600);
     const [canResend, setCanResend] = useState(false);
 
     React.useEffect(() => {
@@ -82,7 +82,7 @@ const ForgotPasswordPage = () => {
         try {
             await API.post('/auth/resend-otp', { email, type: 'reset' });
             toast.success('New reset OTP sent to your email!');
-            setTimer(60);
+            setTimer(600);
             setCanResend(false);
             setOtp(['', '', '', '', '', '']);
         } catch (err) {
@@ -183,7 +183,7 @@ const ForgotPasswordPage = () => {
                                         </span>
                                     </p>
                                 ) : (
-                                    <p className="auth-subtitle">Resend code in {timer}s</p>
+                                    <p className="auth-subtitle">Resend code in {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</p>
                                 )}
                             </div>
                         </form>

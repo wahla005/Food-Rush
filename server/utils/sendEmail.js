@@ -10,7 +10,8 @@ const sendEmail = async ({ email, subject, message }) => {
             from: 'Food Rush <no-reply@softwares.software>',
             to: email,
             subject: subject,
-            text: message,
+            text: message.replace(/<[^>]*>?/gm, ''), // Stripped version for text fallback
+            html: message, // Use message as HTML
         });
 
         if (error) {

@@ -114,8 +114,8 @@ router.post('/forgot-password', async (req, res) => {
 
         // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        admin.otp = otp;
-        admin.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+        admin.resetOtp = otp;
+        admin.resetOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
         await admin.save();
 
         // Send email
@@ -156,8 +156,8 @@ router.post('/verify-otp', async (req, res) => {
         const admin = await User.findOne({ 
             email, 
             role: 'admin',
-            otp,
-            otpExpires: { $gt: Date.now() }
+            resetOtp: otp,
+            resetOtpExpiry: { $gt: Date.now() }
         });
 
         if (!admin) {
@@ -179,8 +179,8 @@ router.post('/reset-password', async (req, res) => {
         const admin = await User.findOne({ 
             email, 
             role: 'admin',
-            otp,
-            otpExpires: { $gt: Date.now() }
+            resetOtp: otp,
+            resetOtpExpiry: { $gt: Date.now() }
         });
 
         if (!admin) {
@@ -188,8 +188,8 @@ router.post('/reset-password', async (req, res) => {
         }
 
         admin.password = newPassword;
-        admin.otp = undefined;
-        admin.otpExpires = undefined;
+        admin.resetOtp = undefined;
+        admin.resetOtpExpiry = undefined;
         await admin.save();
 
         res.json({ message: 'Password reset successfully' });

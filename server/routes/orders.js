@@ -54,10 +54,6 @@ router.post('/', protect, async (req, res) => {
                 currentPrice = Math.round(food.price * (1 - food.discount / 100));
             }
 
-            // EXTRA Rule 2: Pizza promo (extra 25% off Pizza > Rs. 1500)
-            if (food.category && food.category.toLowerCase() === 'pizza' && food.price > 1500) {
-                currentPrice = Math.round(currentPrice * 0.75);
-            }
 
             validatedSubtotal += currentPrice * item.quantity;
             validatedItems.push({

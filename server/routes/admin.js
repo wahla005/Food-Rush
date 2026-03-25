@@ -10,6 +10,7 @@ const Category = require('../models/Category');
 const { adminProtect, ADMIN_JWT_SECRET } = require('../middleware/adminAuth');
 const { upload } = require('../config/cloudinary');
 const sendEmail = require('../utils/sendEmail');
+const { getOTPTemplate } = require('../utils/emailTemplates');
 const crypto = require('crypto');
 
 // ---------------------------------------------
@@ -125,26 +126,15 @@ router.post('/forgot-password', async (req, res) => {
         admin.resetOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
         await admin.save();
 
-        // Send email
-        const message = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                <h2 style="color: #f97316;">Admin Password Reset</h2>
-                <p>Hello Admin,</p>
-                <p>Your OTP for resetting your password is:</p>
-                <div style="background: #fdf2f2; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; text-align: center; color: #f97316; letter-spacing: 5px;">
-                    ${otp}
-                </div>
-                <p>This code will expire in <strong>10 minutes</strong>.</p>
-                <p>If you did not request this, please ignore this email.</p>
-                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 12px; color: #666;">This is an automated message from FoodApp Admin Portal.</p>
-            </div>
-        `;
-
         await sendEmail({
             email: admin.email,
             subject: 'Admin Password Reset OTP',
-            message
+            message: getOTPTemplate({
+                title: 'Admin Password Reset',
+                name: 'Admin',
+                otp: otp,
+                description: 'Your OTP for resetting your admin password is provided below.'
+            })
         });
 
         res.json({ message: 'OTP sent to your email' });

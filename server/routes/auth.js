@@ -6,6 +6,7 @@ const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { upload } = require('../config/cloudinary');
 const sendEmail = require('../utils/sendEmail');
+const { getOTPTemplate } = require('../utils/emailTemplates');
 
 // Helper: generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -100,7 +101,14 @@ router.post('/register', async (req, res) => {
             sendEmail({
                 email: exists.email,
                 subject: subject,
-                message: `${msg}\n\nThis code will expire in 10 minutes.`,
+                message: getOTPTemplate({
+                    title: exists.googleId ? 'Link Account' : 'Verify Account',
+                    name: exists.name,
+                    otp: otp,
+                    description: exists.googleId 
+                        ? 'You are adding a password to your Google-linked account.'
+                        : 'Your new OTP for account verification is provided below.'
+                })
             }).catch(err => console.error('Background Email Error (Merge):', err.message));
 
             return res.status(200).json({ 
@@ -119,7 +127,12 @@ router.post('/register', async (req, res) => {
         sendEmail({
             email: user.email,
             subject: 'Food Rush - Verify Your Account',
-            message: `Hi ${user.name},\n\nYour OTP for account verification is: ${otp}\n\nThis code will expire in 10 minutes.\n\nEnjoy Food Rush!`,
+            message: getOTPTemplate({
+                title: 'Verify Your Account',
+                name: user.name,
+                otp: otp,
+                description: 'Welcome to Food Rush! Please use the code below to verify your account.'
+            })
         }).catch(err => console.error('Background Email Error (Register):', err.message));
 
         res.status(201).json({ 
@@ -174,7 +187,12 @@ router.post('/resend-otp', async (req, res) => {
         sendEmail({
             email: user.email,
             subject: type === 'reset' ? 'Food Rush - Password Reset OTP' : 'Food Rush - Verify Your Account',
-            message: `Hi ${user.name},\n\nYour new OTP is: ${otp}\n\nThis code will expire in 10 minutes.`,
+            message: getOTPTemplate({
+                title: type === 'reset' ? 'Password Reset' : 'Verify Your Account',
+                name: user.name,
+                otp: otp,
+                description: `Your new OTP for ${type === 'reset' ? 'password reset' : 'account verification'} is provided below.`
+            })
         }).catch(err => console.error('Background Email Error (Resend):', err.message));
 
         res.json({ message: 'New OTP sent to your email!' });
@@ -283,7 +301,12 @@ router.post('/forgot-password', async (req, res) => {
         sendEmail({
             email: user.email,
             subject: 'Food Rush - Password Reset OTP',
-            message: `Hi ${user.name},\n\nYour OTP for password reset is: ${otp}\n\nThis code will expire in 10 minutes.`,
+            message: getOTPTemplate({
+                title: 'Password Reset',
+                name: user.name,
+                otp: otp,
+                description: 'We received a request to reset your password. Please use the OTP below to proceed.'
+            })
         }).catch(err => console.error('Background Email Error (Reset):', err.message));
 
         res.json({ message: 'If this email exists, an OTP has been sent. Please check your inbox or Spam.' });

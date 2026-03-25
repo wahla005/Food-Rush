@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
 import { useAdminAuth } from '../context/AdminAuthContext';
@@ -103,6 +103,17 @@ const AdminLoginPage = () => {
                             '🔐 Sign in as Admin'
                         )}
                     </button>
+
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                        <Link 
+                            to="/forgot-password" 
+                            style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textDecoration: 'none', transition: 'color 0.2s' }}
+                            onMouseOver={(e) => e.target.style.color = 'var(--text)'}
+                            onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'}
+                        >
+                            Forgot password?
+                        </Link>
+                    </div>
                 </form>
             </div>
         </div>

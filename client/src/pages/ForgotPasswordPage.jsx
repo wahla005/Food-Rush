@@ -37,7 +37,7 @@ const ForgotPasswordPage = () => {
         setLoading(true);
         try {
             await API.post('/auth/forgot-password', { email });
-            toast.success('OTP sent! Check the server terminal.');
+            toast.success('OTP sent! Please check your email.');
             setStep(2);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to send OTP');
@@ -152,7 +152,7 @@ const ForgotPasswordPage = () => {
                         <div className="otp-icon">📬</div>
                         <h2 className="auth-title" style={{ textAlign: 'center' }}>Enter OTP</h2>
                         <p className="auth-subtitle" style={{ textAlign: 'center' }}>
-                            Check the server terminal for the OTP.
+                            We've sent a 6-digit code to your email.
                         </p>
                         <form onSubmit={handleVerifyOtp} className="otp-form">
                             <div className="otp-inputs">

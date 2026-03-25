@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
 import API from '../api/axios';
 
+import { getImageUrl } from '../utils/image';
 import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
 
 
@@ -18,13 +19,6 @@ const MenuPage = () => {
     const [sort, setSort] = useState('');
     const [vegOnly, setVegOnly] = useState(false);
     const { addToCart, restaurantId } = useCart();
-
-    const getImageUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API.defaults.baseURL.replace('/api', '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
 
     const fetchFoods = async () => {
         setLoading(true);

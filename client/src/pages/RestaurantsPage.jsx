@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiStar, FiClock, FiTruck } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import API from '../api/axios';
+import { getImageUrl } from '../utils/image';
 
 const RestaurantsPage = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -26,7 +27,7 @@ const RestaurantsPage = () => {
                         {restaurants.map(r => (
                             <Link key={r._id} to={`/restaurant/${r._id}`} className="restaurant-card">
                                 <div className="rest-img-wrap">
-                                    <img src={r.image} alt={r.name} />
+                                    <img src={getImageUrl(r.image)} alt={r.name} />
                                     {r.isOpen ? <span className="open-badge">Open</span> : <span className="closed-badge">Closed</span>}
                                 </div>
                                 <div className="rest-info">

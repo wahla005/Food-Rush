@@ -9,6 +9,8 @@ const Restaurant = require('../models/Restaurant');
 const Category = require('../models/Category');
 const { adminProtect, ADMIN_JWT_SECRET } = require('../middleware/adminAuth');
 const { upload } = require('../config/cloudinary');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');
 
 // ─────────────────────────────────────────────
 // Hardcoded admin credentials
@@ -17,7 +19,7 @@ const ADMIN_EMAIL = 'fwahla970@gmail.com';
 const ADMIN_PASSWORD = 'faizan123';
 
 // POST /api/admin/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     console.log(`🔑 Admin login attempt for: ${email}`);
 
@@ -25,14 +27,175 @@ router.post('/login', (req, res) => {
         return res.status(400).json({ message: 'Email and password required' });
     }
 
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-        console.warn(`❌ Admin login failed for: ${email}`);
-        return res.status(401).json({ message: 'Invalid admin credentials' });
+    // 1. Check if Admin exists in database
+    let adminUser = await User.findOne({ email, role: 'admin' });
+
+    if (adminUser) {
+        const isMatch = await adminUser.matchPassword(password);
+        if (!isMatch) {
+            console.warn(`❌ Admin login failed (DB): ${email}`);
+            return res.status(401).json({ message: 'Invalid admin credentials' });
+        }
+    } else {
+        // 2. Fallback to hardcoded admin for first-time migration
+        if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+            console.log(`🚀 Initial admin login detected. Checking if user exists with this email...`);
+            
+            // Check if ANY user exists with this email (e.g. regular user)
+            let existingUser = await User.findOne({ email: ADMIN_EMAIL });
+            
+            if (existingUser) {
+                console.log(`🔄 Existing user found. Promoting to Admin role...`);
+                existingUser.role = 'admin';
+                existingUser.password = ADMIN_PASSWORD; // Set the default password if they had none (Google) or update it
+                existingUser.isVerified = true;
+                await existingUser.save();
+                adminUser = existingUser;
+            } else {
+                console.log(`✨ No user found. Creating brand new Admin...`);
+                adminUser = await User.create({
+                    name: 'Admin',
+                    email: ADMIN_EMAIL,
+                    password: ADMIN_PASSWORD,
+                    role: 'admin',
+                    isVerified: true
+                });
+            }
+        } else {
+            console.warn(`❌ Admin login failed (Hardcoded/Not Found): ${email}`);
+            return res.status(401).json({ message: 'Invalid admin credentials' });
+        }
     }
 
     console.log(`✅ Admin logged in: ${email}`);
-    const token = jwt.sign({ email: ADMIN_EMAIL, role: 'admin' }, ADMIN_JWT_SECRET, { expiresIn: '8h' });
-    res.json({ token, admin: { email: ADMIN_EMAIL, name: 'Admin' } });
+    const token = jwt.sign({ email: adminUser.email, role: 'admin', id: adminUser._id }, ADMIN_JWT_SECRET, { expiresIn: '8h' });
+    res.json({ token, admin: { email: adminUser.email, name: adminUser.name } });
+});
+
+// PUT /api/admin/change-password
+router.put('/change-password', adminProtect, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Both current and new passwords are required' });
+        }
+
+        // adminProtect attaches decoded token to req.admin
+        const admin = await User.findOne({ email: req.admin.email, role: 'admin' });
+        if (!admin) return res.status(404).json({ message: 'Admin user not found in database' });
+
+        const isMatch = await admin.matchPassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+
+        admin.password = newPassword;
+        await admin.save();
+
+        console.log(`✅ Admin password changed for: ${admin.email}`);
+        res.json({ message: 'Password changed successfully' });
+    } catch (err) {
+        console.error('Admin Password Change Error:', err);
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+});
+
+// POST /api/admin/forgot-password
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: 'Email is required' });
+
+        const admin = await User.findOne({ email, role: 'admin' });
+        if (!admin) {
+            // Security: don't reveal if admin exists, but for the one hardcoded admin it's fine
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        admin.otp = otp;
+        admin.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+        await admin.save();
+
+        // Send email
+        const message = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #f97316;">Admin Password Reset</h2>
+                <p>Hello Admin,</p>
+                <p>Your OTP for resetting your password is:</p>
+                <div style="background: #fdf2f2; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; text-align: center; color: #f97316; letter-spacing: 5px;">
+                    ${otp}
+                </div>
+                <p>This code will expire in <strong>10 minutes</strong>.</p>
+                <p>If you did not request this, please ignore this email.</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #666;">This is an automated message from FoodApp Admin Portal.</p>
+            </div>
+        `;
+
+        await sendEmail({
+            email: admin.email,
+            subject: 'Admin Password Reset OTP',
+            message
+        });
+
+        res.json({ message: 'OTP sent to your email' });
+    } catch (err) {
+        console.error('Admin Forgot Pwd Error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// POST /api/admin/verify-otp
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) return res.status(400).json({ message: 'Email and OTP required' });
+
+        const admin = await User.findOne({ 
+            email, 
+            role: 'admin',
+            otp,
+            otpExpires: { $gt: Date.now() }
+        });
+
+        if (!admin) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        res.json({ message: 'OTP verified successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// POST /api/admin/reset-password
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) return res.status(400).json({ message: 'All fields required' });
+
+        const admin = await User.findOne({ 
+            email, 
+            role: 'admin',
+            otp,
+            otpExpires: { $gt: Date.now() }
+        });
+
+        if (!admin) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        admin.password = newPassword;
+        admin.otp = undefined;
+        admin.otpExpires = undefined;
+        await admin.save();
+
+        res.json({ message: 'Password reset successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 // GET /api/admin/orders

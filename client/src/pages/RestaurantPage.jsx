@@ -4,7 +4,7 @@ import { FiStar, FiClock, FiTruck } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
 import API from '../api/axios';
-
+import { getImageUrl } from '../utils/image';
 import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
 
 const RestaurantPage = () => {
@@ -47,7 +47,7 @@ const RestaurantPage = () => {
             <main className="page-content">
                 {/* Restaurant Hero */}
                 <div className="rest-hero">
-                    <img src={restaurant.image} alt={restaurant.name} className="rest-hero-img" />
+                    <img src={getImageUrl(restaurant.image)} alt={restaurant.name} className="rest-hero-img" />
                     <div className="rest-hero-overlay">
                         <h1>{restaurant.name}</h1>
                         <p>{restaurant.description}</p>
@@ -79,7 +79,7 @@ const RestaurantPage = () => {
                         return (
                             <div key={f._id} className="food-card">
                                 <Link to={`/food/${f._id}`} style={{ position: 'relative', display: 'block' }}>
-                                    <img src={f.image} alt={f.name} className="food-card-img" />
+                                    <img src={getImageUrl(f.image)} alt={f.name} className="food-card-img" />
                                     {disc > 0 && (
                                         <span className="discount-badge-card">{disc}% OFF</span>
                                     )}

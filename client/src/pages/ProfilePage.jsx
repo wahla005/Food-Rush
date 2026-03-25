@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/image';
 import PasswordInput from '../components/PasswordInput';
 import { FiCamera, FiTrash2 } from 'react-icons/fi';
 
@@ -91,7 +92,6 @@ const ProfilePage = () => {
         }
     };
 
-    const baseUrl = 'http://localhost:5001';
 
     return (
         <div className="app-page">
@@ -105,7 +105,7 @@ const ProfilePage = () => {
                         <div className="profile-avatar-wrapper" onClick={() => setShowPicPopup(true)}> {/* Updated click handler */}
                             <div className="profile-avatar-lg">
                                 {user?.image ? (
-                                    <img src={`${baseUrl}${user.image}`} alt={user.name} className="profile-img-lg" />
+                                    <img src={getImageUrl(user.image)} alt={user.name} className="profile-img-lg" />
                                 ) : (
                                     user?.name?.[0]?.toUpperCase()
                                 )}

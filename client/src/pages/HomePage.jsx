@@ -4,6 +4,8 @@ import { FiStar, FiClock, FiArrowRight, FiTruck } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
+import { getImageUrl } from '../utils/image';
+
 const HomePage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -11,13 +13,6 @@ const HomePage = () => {
     const [featured, setFeatured] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const getImageUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API.defaults.baseURL.replace('/api', '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
 
     useEffect(() => {
         const fetchData = async () => {

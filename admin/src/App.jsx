@@ -5,6 +5,7 @@ import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminForgotPasswordPage from './pages/AdminForgotPasswordPage';
 
 // ── Guard ──────────────────────────────────
 const AdminRoute = ({ children }) => {
@@ -17,6 +18,7 @@ const AppRoutes = () => (
     <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<AdminLoginPage />} />
+        <Route path="/forgot-password" element={<AdminForgotPasswordPage />} />
         <Route path="/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

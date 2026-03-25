@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { getImageUrl } from '../utils/image';
 
 const OrderConfirmationPage = () => {
     const location = useLocation();
@@ -53,7 +54,7 @@ const OrderConfirmationPage = () => {
                         <h3>Items Ordered</h3>
                         {order.items?.map((item, i) => (
                             <div key={i} className="confirm-item">
-                                <img src={item.image} alt={item.name} className="confirm-item-img" />
+                                <img src={getImageUrl(item.image)} alt={item.name} className="confirm-item-img" />
                                 <span>{item.name} × {item.quantity}</span>
                                 <span>Rs. {item.price * item.quantity}</span>
                             </div>

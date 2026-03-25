@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2, FiPlus, FiX, FiLogOut, FiShield, FiEdit, FiStar, FiChevronDown, FiRefreshCw } from 'react-icons/fi';
+import { FiTrash2, FiPlus, FiX, FiLogOut, FiShield, FiEdit, FiStar, FiChevronDown, FiRefreshCw, FiSettings, FiKey, FiCheckCircle } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const TABS = ['Stats', 'Orders', 'Reviews', 'Food Items', 'Restaurants', 'Categories', 'Users'];
+import { getImageUrl } from '../utils/image';
+
+const TABS = ['Stats', 'Orders', 'Reviews', 'Food Items', 'Restaurants', 'Categories', 'Users', 'Settings'];
 
 const AdminDashboard = () => {
     const { adminLogout } = useAdminAuth();
@@ -33,6 +35,8 @@ const AdminDashboard = () => {
     const [editingCategory, setEditingCategory] = useState(null);
     const [editingRestaurant, setEditingRestaurant] = useState(null);
     const [discountValues, setDiscountValues] = useState({});
+    const [pwdData, setPwdData] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+    const [changingPwd, setChangingPwd] = useState(false);
 
     useEffect(() => { loadData(); }, [tab]);
 
@@ -128,13 +132,6 @@ const AdminDashboard = () => {
         } catch { toast.error('Failed'); }
     };
 
-    const getImageUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API.defaults.baseURL.replace('/api', '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
     const handleImageUpload = async (e, setFormData) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -147,10 +144,8 @@ const AdminDashboard = () => {
             const { data } = await API.post('/admin/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            // Construct full URL with backend base (removing '/api')
-            const baseUrl = API.defaults.baseURL.replace('/api', '');
-            const imageUrl = data.url.startsWith('http') ? data.url : `${baseUrl}${data.url}`;
-            setFormData(prev => ({ ...prev, image: imageUrl }));
+            // Store the path from the server (handled by getImageUrl on display)
+            setFormData(prev => ({ ...prev, image: data.url }));
             toast.success('Image uploaded successfully');
         } catch (err) {
             const msg = err.response?.data?.message || 'Image upload failed';
@@ -329,6 +324,30 @@ const AdminDashboard = () => {
             ));
             toast.success('Order cancelled. Customer will be notified.');
         } catch { toast.error('Failed to decline payment'); }
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        if (pwdData.newPassword !== pwdData.confirmNewPassword) {
+            return toast.error('New passwords do not match');
+        }
+        if (pwdData.newPassword.length < 6) {
+            return toast.error('New password must be at least 6 characters');
+        }
+
+        try {
+            setChangingPwd(true);
+            await API.put('/admin/change-password', {
+                currentPassword: pwdData.currentPassword,
+                newPassword: pwdData.newPassword
+            });
+            toast.success('Password changed successfully!');
+            setPwdData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to change password');
+        } finally {
+            setChangingPwd(false);
+        }
     };
 
     return (
@@ -1198,6 +1217,104 @@ const AdminDashboard = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+                {/* ── SETTINGS ── */}
+                {tab === 'Settings' && (
+                    <div className="admin-settings-container" style={{ maxWidth: '600px', margin: '2rem auto' }}>
+                        <div className="admin-card" style={{ padding: '2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+                                <div style={{ background: 'rgba(249, 115, 22, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
+                                    <FiKey size={24} color="#f97316" />
+                                </div>
+                                <div>
+                                    <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#fff' }}>Security Settings</h2>
+                                    <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>Update your administrator password</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>Current Password</label>
+                                    <input
+                                        type="password"
+                                        className="input-field"
+                                        placeholder="••••••••"
+                                        value={pwdData.currentPassword}
+                                        onChange={e => setPwdData(p => ({ ...p, currentPassword: e.target.value }))}
+                                        required
+                                        style={{ marginBottom: 0 }}
+                                    />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>New Password</label>
+                                        <input
+                                            type="password"
+                                            className="input-field"
+                                            placeholder="••••••••"
+                                            value={pwdData.newPassword}
+                                            onChange={e => setPwdData(p => ({ ...p, newPassword: e.target.value }))}
+                                            required
+                                            style={{ marginBottom: 0 }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>Confirm New Password</label>
+                                        <input
+                                            type="password"
+                                            className="input-field"
+                                            placeholder="••••••••"
+                                            value={pwdData.confirmNewPassword}
+                                            onChange={e => setPwdData(p => ({ ...p, confirmNewPassword: e.target.value }))}
+                                            required
+                                            style={{ marginBottom: 0 }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="btn-orange"
+                                    disabled={changingPwd}
+                                    style={{
+                                        marginTop: '1rem',
+                                        height: '50px',
+                                        fontSize: '1rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    {changingPwd ? (
+                                        <>
+                                            <div className="spinner" style={{ width: '20px', height: '20px', borderWidth: '2px' }}></div>
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FiCheckCircle /> Update Password
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+
+                        <div style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <FiShield size={20} color="#3b82f6" style={{ marginTop: '0.2rem' }} />
+                                <div>
+                                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#3b82f6' }}>Security Note</h4>
+                                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.4' }}>
+                                        Changing your password will update your credentials in the database.
+                                        Make sure to use a strong password and keep it safe.
+                                        You will stay logged in after changing your password.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>

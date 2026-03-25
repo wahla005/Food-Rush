@@ -7,34 +7,17 @@ const FoodItem = require('../models/FoodItem');
 const Restaurant = require('../models/Restaurant');
 const Order = require('../models/Order');
 const { protect } = require('../middleware/auth');
+const { upload } = require('../config/cloudinary');
 
 // BASE FEE
 const BASE_DELIVERY_FEE = 59;
 
-// ── Multer for payment proof screenshots ──────────────────────────────────────
-const proofStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = 'uploads/payment-proofs/';
-        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `proof-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-const uploadProof = multer({
-    storage: proofStorage,
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) cb(null, true);
-        else cb(new Error('Only images allowed'), false);
-    }
-});
 
 // POST /api/orders/upload-proof  — upload payment screenshot (protected)
-router.post('/upload-proof', protect, uploadProof.single('proof'), (req, res) => {
+router.post('/upload-proof', protect, upload.single('proof'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    res.json({ url: `/uploads/payment-proofs/${req.file.filename}` });
+    // Cloudinary returns the secure_url in req.file.path
+    res.json({ url: req.file.path });
 });
 
 // POST /api/orders  — place order

@@ -4,6 +4,7 @@ import { FiTrash2, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
 import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
+import { getImageUrl } from '../utils/image';
 
 const BASE_DELIVERY_FEE = 59;
 
@@ -63,7 +64,7 @@ const CartPage = () => {
                             const discounted = item.finalPrice < item.price;
                             return (
                                 <div key={item._id} className="cart-item">
-                                    <img src={item.image} alt={item.name} className="cart-item-img" />
+                                    <img src={getImageUrl(item.image)} alt={item.name} className="cart-item-img" />
                                     <div className="cart-item-info">
                                         <h4>
                                             {item.name}

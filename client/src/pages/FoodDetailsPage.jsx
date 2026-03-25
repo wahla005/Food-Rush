@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/image';
 import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
 
 const FoodDetailsPage = () => {
@@ -58,7 +59,7 @@ const FoodDetailsPage = () => {
                 <div className="food-detail-grid">
                     {/* Image */}
                     <div className="food-detail-img-wrap">
-                        <img src={food.image} alt={food.name} className="food-detail-img" />
+                        <img src={getImageUrl(food.image)} alt={food.name} className="food-detail-img" />
                         {food.isVeg ? <span className="veg-badge big-badge">🌿 Veg</span> : <span className="nonveg-badge big-badge">🍖 Non-Veg</span>}
                         {disc > 0 && <span className="discount-badge-detail">{disc}% OFF</span>}
                     </div>

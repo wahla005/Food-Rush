@@ -103,7 +103,7 @@ const OrderHistoryPage = () => {
                                             <div key={i} style={{ display: 'flex', flexDirection: 'column', background: 'var(--white)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                                                        {item.image && <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
+                                                        {item.image && <img src={getImageUrl(item.image)} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
                                                         <div>
                                                             <p style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--dark)' }}>{item.name}</p>
                                                             <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Quantity: {item.quantity}</p>

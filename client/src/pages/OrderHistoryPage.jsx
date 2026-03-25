@@ -73,7 +73,7 @@ const OrderHistoryPage = () => {
 
                 {orders.length === 0 ? (
                     <div className="empty-state">
-                        <p>📦 No orders yet</p>
+                        <p>No orders yet</p>
                         <Link to="/menu" className="btn-orange">Order Now</Link>
                     </div>
                 ) : (
@@ -189,7 +189,7 @@ const OrderHistoryPage = () => {
                                 <div className="order-card-footer" style={{ marginTop: '1rem' }}>
                                     <span className="order-total">Rs. {order.total}</span>
                                     <div className="order-actions">
-                                        <button className="btn-outline-sm" onClick={() => handleReorder(order)}>♻️ Reorder</button>
+                                        <button className="btn-outline-sm" onClick={() => handleReorder(order)}>Reorder</button>
                                     </div>
                                 </div>
                             </div>

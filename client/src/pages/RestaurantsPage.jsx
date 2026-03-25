@@ -33,7 +33,7 @@ const RestaurantsPage = () => {
                                 <div className="rest-info">
                                     <h3>{r.name}</h3>
                                     <p>{r.cuisine.join(', ')}</p>
-                                    <p className="rest-address">📍 {r.address}</p>
+                                    <p className="rest-address">{r.address}</p>
                                     <div className="rest-meta">
                                         <span><FiStar size={13} /> {r.rating}</span>
                                         <span><FiClock size={13} /> {r.deliveryTime}</span>

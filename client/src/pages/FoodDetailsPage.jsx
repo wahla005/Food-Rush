@@ -60,7 +60,7 @@ const FoodDetailsPage = () => {
                     {/* Image */}
                     <div className="food-detail-img-wrap">
                         <img src={getImageUrl(food.image)} alt={food.name} className="food-detail-img" />
-                        {food.isVeg ? <span className="veg-badge big-badge">🌿 Veg</span> : <span className="nonveg-badge big-badge">🍖 Non-Veg</span>}
+                        {food.isVeg ? <span className="veg-badge big-badge">Veg</span> : <span className="nonveg-badge big-badge">Non-Veg</span>}
                         {disc > 0 && <span className="discount-badge-detail">{disc}% OFF</span>}
                     </div>
 
@@ -106,7 +106,7 @@ const FoodDetailsPage = () => {
                                 )}
                                 {isPizzaPromo && (
                                     <div style={{ background: '#fff7ed', color: '#ea580c', fontSize: '0.75rem', fontWeight: 800, padding: '0.25rem 0.75rem', borderRadius: 8, marginBottom: '0.5rem', display: 'inline-block' }}>
-                                        🍕 PIZZA SPECIAL: Extra 25% OFF applied
+                                        PIZZA SPECIAL: Extra 25% OFF applied
                                     </div>
                                 )}
                                 <span className="food-detail-price">Rs. {effectivePrice * qty}</span>

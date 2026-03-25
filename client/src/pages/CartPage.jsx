@@ -55,7 +55,7 @@ const CartPage = () => {
             <Navbar />
             <main className="page-content">
                 <h1 className="page-title">Your Cart</h1>
-                {restaurantName && <p className="cart-restaurant">📍 Ordering from <strong>{restaurantName}</strong></p>}
+                {restaurantName && <p className="cart-restaurant">Ordering from <strong>{restaurantName}</strong></p>}
 
                 <div className="cart-layout">
                     {/* Items */}
@@ -70,7 +70,7 @@ const CartPage = () => {
                                             {item.name}
                                             {item.hasPizzaPromo && (
                                                 <span style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#92400e', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: 50, marginLeft: 8 }}>
-                                                    🍕 Pizza SPECIAL
+                                                    Pizza SPECIAL
                                                 </span>
                                             )}
                                         </h4>
@@ -95,7 +95,7 @@ const CartPage = () => {
                                 </div>
                             );
                         })}
-                        <button className="clear-cart-btn" onClick={clearCart}>🗑️ Clear Cart</button>
+                        <button className="clear-cart-btn" onClick={clearCart}>Clear Cart</button>
                     </div>
 
                     {/* Summary */}
@@ -106,7 +106,7 @@ const CartPage = () => {
                             <span>Delivery Fee</span>
                             <span>
                                 {loading ? '...' : isFirstOrder ? (
-                                    <span style={{ color: '#16a34a', fontWeight: 700 }}>FREE 🎉</span>
+                                    <span style={{ color: '#16a34a', fontWeight: 700 }}>FREE</span>
                                 ) : `Rs. ${BASE_DELIVERY_FEE}`}
                             </span>
                         </div>

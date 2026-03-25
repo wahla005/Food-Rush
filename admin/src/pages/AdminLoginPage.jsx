@@ -25,7 +25,7 @@ const AdminLoginPage = () => {
         try {
             const { data } = await API.post('/admin/login', form);
             adminLogin(data.token);
-            toast.success('Welcome, Admin! 🛡️');
+            toast.success('Welcome, Admin!');
             navigate('/dashboard');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Invalid admin credentials');
@@ -100,7 +100,7 @@ const AdminLoginPage = () => {
                                 Authenticating...
                             </span>
                         ) : (
-                            '🔐 Sign in as Admin'
+                            'Sign in as Admin'
                         )}
                     </button>
 

@@ -52,7 +52,7 @@ const OtpPage = () => {
         setLoading(true);
         try {
             await API.post('/auth/verify-otp', { email, otp: otpStr });
-            toast.success('✅ Account verified! Please login.');
+            toast.success('Account verified! Please login.');
             navigate('/login');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Invalid OTP');
@@ -80,7 +80,7 @@ const OtpPage = () => {
     return (
         <div className="otp-page">
             <div className="otp-card">
-                <div className="otp-icon">📬</div>
+                <div className="otp-icon"></div>
                 <h2 className="auth-title" style={{ textAlign: 'center' }}>Verify Your Email</h2>
                 <p className="auth-subtitle" style={{ textAlign: 'center' }}>
                     Enter the 6-digit OTP sent to your email.

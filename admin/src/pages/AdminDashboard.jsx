@@ -359,7 +359,7 @@ const AdminDashboard = () => {
                     <span className="admin-header-title">Admin Dashboard</span>
                 </div>
                 <div className="admin-header-right">
-                    <span className="admin-badge">🟢 Admin</span>
+                    <span className="admin-badge">Admin</span>
                     <button
                         onClick={loadData}
                         className="admin-refresh-btn"
@@ -422,7 +422,7 @@ const AdminDashboard = () => {
                     <div className="monthly-stats-container" style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                         {/* Monthly Revenue Section */}
                         <div className="admin-table-wrap" style={{ margin: 0 }}>
-                            <h3 style={{ padding: '1rem', color: '#10b981' }}>📊 Monthly Revenue Breakdown</h3>
+                            <h3 style={{ padding: '1rem', color: '#10b981' }}>Monthly Revenue Breakdown</h3>
                             <table className="admin-table">
                                 <thead>
                                     <tr>
@@ -451,7 +451,7 @@ const AdminDashboard = () => {
 
                         {/* Monthly Users Section */}
                         <div className="admin-table-wrap" style={{ margin: 0 }}>
-                            <h3 style={{ padding: '1rem', color: '#3b82f6' }}>👥 Monthly New User Signups</h3>
+                            <h3 style={{ padding: '1rem', color: '#3b82f6' }}>Monthly New User Signups</h3>
                             <table className="admin-table">
                                 <thead>
                                     <tr>
@@ -529,10 +529,10 @@ const AdminDashboard = () => {
                                                             ? 'rgba(99,102,241,0.3)'
                                                             : 'rgba(249,115,22,0.3)'}`,
                                                 }}>
-                                                    {o.paymentMethod === 'COD' ? '💵 COD'
-                                                        : o.paymentMethod === 'Card' ? '💳 Card'
-                                                            : o.paymentMethod === 'EasyPaisa' ? '📱 EasyPaisa'
-                                                                : o.paymentMethod === 'JazzCash' ? '📱 JazzCash'
+                                                    {o.paymentMethod === 'COD' ? 'COD'
+                                                        : o.paymentMethod === 'Card' ? 'Card'
+                                                            : o.paymentMethod === 'EasyPaisa' ? 'EasyPaisa'
+                                                                : o.paymentMethod === 'JazzCash' ? 'JazzCash'
                                                                     : o.paymentMethod || '—'}
                                                 </span>
                                             </td>
@@ -565,16 +565,16 @@ const AdminDashboard = () => {
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.5rem' }}>
                                                         <div style={{ flex: 1, minWidth: 180 }}>
                                                             <p style={{ fontWeight: 700, color: '#f97316', fontSize: '0.82rem', marginBottom: '0.35rem' }}>
-                                                                🔔 Payment Verification Required
+                                                                Payment Verification Required
                                                             </p>
                                                             {o.mobilePayNumber && (
                                                                 <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.65)', margin: '0.1rem 0' }}>
-                                                                    📞 From: <strong style={{ color: '#fff' }}>{o.mobilePayNumber}</strong>
+                                                                    From: <strong style={{ color: '#fff' }}>{o.mobilePayNumber}</strong>
                                                                 </p>
                                                             )}
                                                             {o.transactionRef && (
                                                                 <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.65)', margin: '0.1rem 0' }}>
-                                                                    🔖 TXN Ref: <strong style={{ color: '#fff', fontFamily: 'monospace', letterSpacing: '0.03em' }}>{o.transactionRef}</strong>
+                                                                    TXN Ref: <strong style={{ color: '#fff', fontFamily: 'monospace', letterSpacing: '0.03em' }}>{o.transactionRef}</strong>
                                                                 </p>
                                                             )}
                                                         </div>
@@ -777,7 +777,7 @@ const AdminDashboard = () => {
                                         </div>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                                             <input type="checkbox" checked={editingFood.isVeg} onChange={e => setEditingFood(f => ({ ...f, isVeg: e.target.checked }))} />
-                                            🌿 Vegetarian
+                                            Vegetarian
                                         </label>
                                         <button type="submit" className="btn-orange" disabled={uploading}>
                                             {uploading ? 'Uploading Image...' : 'Update Food Item'}
@@ -867,7 +867,7 @@ const AdminDashboard = () => {
                                                                 color: '#fbbf24', fontSize: '0.7rem',
                                                                 fontWeight: 700, padding: '0.1rem 0.45rem',
                                                                 borderRadius: 50, border: '1px solid rgba(251,191,36,0.3)',
-                                                            }}>🏷️ {disc}% OFF</span>
+                                                            }}>{disc}% OFF</span>
                                                         </div>
                                                     )}
                                                 </td>
@@ -1008,7 +1008,7 @@ const AdminDashboard = () => {
                                             <td>{r.name}</td>
                                             <td>{r.cuisine.join(', ')}</td>
                                             <td style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.address || '—'}</td>
-                                            <td>⭐ {r.rating}</td>
+                                            <td>{r.rating}</td>
                                             <td>
                                                 <button
                                                     onClick={() => toggleRestaurantStatus(r._id, r.isOpen)}
@@ -1026,7 +1026,7 @@ const AdminDashboard = () => {
                                                         border: r.isOpen ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(239,68,68,0.4)',
                                                     }}
                                                 >
-                                                    {r.isOpen ? '🟢 Open' : '🔴 Closed'}
+                                                    {r.isOpen ? 'Open' : 'Closed'}
                                                 </button>
                                             </td>
                                             <td>
@@ -1164,13 +1164,13 @@ const AdminDashboard = () => {
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {u.name}
-                                                {u.isBlocked && <span title="Blocked" style={{ color: '#f87171', fontSize: '0.8rem' }}>🚫</span>}
+                                                {u.isBlocked && <span title="Blocked" style={{ color: '#f87171', fontSize: '0.8rem' }}> (Blocked)</span>}
                                             </div>
                                         </td>
                                         <td>{u.email}</td>
                                         <td>
                                             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
-                                                {u.googleId ? '🌐 Google' : '📧 Email'}
+                                                {u.googleId ? 'Google' : 'Email'}
                                             </span>
                                         </td>
                                         <td style={{ textAlign: 'center' }}>

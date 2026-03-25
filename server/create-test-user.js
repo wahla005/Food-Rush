@@ -19,7 +19,7 @@ const createVerifiedUser = async () => {
             isVerified: true
         });
 
-        console.log('✅ Verified user created: verified@test.com / Password123!');
+        console.log('Verified user created: verified@test.com / Password123!');
         process.exit(0);
     } catch (err) {
         console.error(err);

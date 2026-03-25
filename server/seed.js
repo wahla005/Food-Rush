@@ -259,11 +259,11 @@ const getFoodItems = (restaurantId, name) => {
 const seed = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log('✅ Connected to MongoDB');
+        console.log('Connected to MongoDB');
         await Restaurant.deleteMany();
         await FoodItem.deleteMany();
         await Category.deleteMany();
-        console.log('🗑️  Cleared existing data');
+        console.log('Cleared existing data');
 
         const cats = [
             { name: 'Burgers', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop' },
@@ -287,17 +287,17 @@ const seed = async () => {
             { name: 'Starters', image: 'https://images.unsplash.com/photo-1607330289024-1535c6b4e1c1?w=400&h=400&fit=crop' },
         ];
         await Category.insertMany(cats);
-        console.log('✅ Seeded categories');
+        console.log('Seeded categories');
         for (const rData of restaurants) {
             const restaurant = await Restaurant.create(rData);
             const foods = getFoodItems(restaurant._id, restaurant.name);
             await FoodItem.insertMany(foods);
-            console.log(`✅ Seeded: ${restaurant.name} (${foods.length} items)`);
+            console.log(`Seeded: ${restaurant.name} (${foods.length} items)`);
         }
-        console.log('\n🎉 Seeding complete!');
+        console.log('\nSeeding complete!');
         process.exit(0);
     } catch (err) {
-        console.error('❌ Seed error:', err);
+        console.error('Seed error:', err);
         process.exit(1);
     }
 };

@@ -91,12 +91,12 @@ const RestaurantPage = () => {
                                             padding: '0.2rem 0.5rem', borderRadius: 4,
                                             boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                         }}>
-                                            🍕 Pizza SPECIAL
+                                            Pizza SPECIAL
                                         </span>
                                     )}
                                 </Link>
                                 <div className="food-card-body">
-                                    {f.isVeg ? <span className="veg-badge">🌿 Veg</span> : <span className="nonveg-badge">🍖 Non-Veg</span>}
+                                    {f.isVeg ? <span className="veg-badge">Veg</span> : <span className="nonveg-badge">Non-Veg</span>}
                                     <Link to={`/food/${f._id}`}><h4>{f.name}</h4></Link>
                                     <p className="food-desc">{f.description?.slice(0, 55)}...</p>
                                     <div className="food-card-footer">

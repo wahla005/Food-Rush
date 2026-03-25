@@ -126,7 +126,7 @@ const ForgotPasswordPage = () => {
                 {/* Step 1 */}
                 {step === 1 && (
                     <>
-                        <div className="otp-icon">🔐</div>
+                        <div className="otp-icon"></div>
                         <h2 className="auth-title" style={{ textAlign: 'center' }}>Forgot Password?</h2>
                         <p className="auth-subtitle" style={{ textAlign: 'center' }}>
                             Enter your registered email and we'll send an OTP.
@@ -149,7 +149,7 @@ const ForgotPasswordPage = () => {
                 {/* Step 2 */}
                 {step === 2 && (
                     <>
-                        <div className="otp-icon">📬</div>
+                        <div className="otp-icon"></div>
                         <h2 className="auth-title" style={{ textAlign: 'center' }}>Enter OTP</h2>
                         <p className="auth-subtitle" style={{ textAlign: 'center' }}>
                             We've sent a 6-digit code to your email.
@@ -193,7 +193,7 @@ const ForgotPasswordPage = () => {
                 {/* Step 3 */}
                 {step === 3 && (
                     <>
-                        <div className="otp-icon">🔑</div>
+                        <div className="otp-icon"></div>
                         <h2 className="auth-title" style={{ textAlign: 'center' }}>Set New Password</h2>
                         <form onSubmit={handleResetPassword} className="auth-form">
                             <PasswordInput

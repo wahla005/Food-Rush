@@ -10,7 +10,7 @@ class ErrorBoundary extends React.Component {
     if (this.state.error) {
       return (
         <div style={{ padding: 40, fontFamily: 'monospace', background: '#fff0f0', minHeight: '100vh' }}>
-          <h2 style={{ color: 'red' }}>🔴 App Crash Detected</h2>
+          <h2 style={{ color: 'red' }}>App Crash Detected</h2>
           <pre style={{ whiteSpace: 'pre-wrap', color: '#333' }}>{this.state.error?.message}</pre>
           <pre style={{ whiteSpace: 'pre-wrap', color: '#888', fontSize: 12 }}>{this.state.error?.stack}</pre>
         </div>

@@ -74,7 +74,7 @@ const MenuPage = () => {
                             </select>
                             <label className="veg-toggle">
                                 <input type="checkbox" checked={vegOnly} onChange={e => setVegOnly(e.target.checked)} />
-                                🌿 Veg Only
+                                Veg Only
                             </label>
                         </div>
                     </div>
@@ -100,7 +100,7 @@ const MenuPage = () => {
                     </div>
                 ) : foods.length === 0 ? (
                     <div className="empty-state">
-                        <p>😔 No items found</p>
+                        <p>No items found</p>
                         <button className="btn-orange" onClick={() => { setActiveCategory('All'); setVegOnly(false); setSort(''); }}>
                             Clear Filters
                         </button>
@@ -128,17 +128,17 @@ const MenuPage = () => {
                                                 padding: '0.2rem 0.5rem', borderRadius: 4,
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                             }}>
-                                                🍕 Pizza SPECIAL
+                                                Pizza SPECIAL
                                             </span>
                                         )}
                                     </Link>
                                     <div className="food-card-body">
                                         <div className="food-card-top">
-                                            {f.isVeg ? <span className="veg-badge">🌿 Veg</span> : <span className="nonveg-badge">🍖 Non-Veg</span>}
+                                            {f.isVeg ? <span className="veg-badge">Veg</span> : <span className="nonveg-badge">Non-Veg</span>}
                                         </div>
                                         <Link to={`/food/${f._id}`}><h4>{f.name}</h4></Link>
                                         <p className="food-desc">{f.description?.slice(0, 55)}...</p>
-                                        <p className="food-restaurant">📍 {f.restaurant?.name}</p>
+                                        <p className="food-restaurant">{f.restaurant?.name}</p>
                                         <div className="food-card-footer">
                                             {hasAnyDiscount ? (
                                                 <span>

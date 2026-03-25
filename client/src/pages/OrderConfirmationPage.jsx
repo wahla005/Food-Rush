@@ -22,7 +22,7 @@ const OrderConfirmationPage = () => {
             <Navbar />
             <main className="page-content">
                 <div className="confirm-card">
-                    <div className="confirm-icon">🎉</div>
+                    <div className="confirm-icon"></div>
                     <h1>Order Placed!</h1>
                     <p className="confirm-subtitle">Your order has been received. We'll start preparing it shortly.</p>
 
@@ -32,7 +32,7 @@ const OrderConfirmationPage = () => {
                     </div>
 
                     <div className="delivery-eta">
-                        <span>⏱️ Estimated Delivery</span>
+                        <span>Estimated Delivery</span>
                         <strong>{order.estimatedDelivery}</strong>
                     </div>
 

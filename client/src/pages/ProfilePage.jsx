@@ -154,7 +154,7 @@ const ProfilePage = () => {
                     {['profile', 'password'].map(t => (
                         <button key={t} className={`profile-tab ${tab === t ? 'profile-tab-active' : ''}`}
                             onClick={() => setTab(t)}>
-                            {t === 'profile' ? '👤 Edit Profile' : '🔐 Change Password'}
+                            {t === 'profile' ? 'Edit Profile' : 'Change Password'}
                         </button>
                     ))}
                 </div>

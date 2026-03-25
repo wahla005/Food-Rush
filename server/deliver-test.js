@@ -9,7 +9,7 @@ async function deliverAll() {
             { status: { $ne: 'Delivered' } },
             { status: 'Delivered' }
         );
-        console.log(`✅ Marked ${result.modifiedCount} orders as Delivered`);
+        console.log(`Marked ${result.modifiedCount} orders as Delivered`);
         process.exit(0);
     } catch (err) {
         console.error(err);

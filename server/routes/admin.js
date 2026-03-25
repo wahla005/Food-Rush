@@ -21,38 +21,44 @@ const ADMIN_PASSWORD = 'faizan123';
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    console.log(`🔑 Admin login attempt for: ${email}`);
+    console.log(`Admin login attempt for: ${email}`);
 
     if (!email || !password) {
         return res.status(400).json({ message: 'Email and password required' });
     }
 
     // 1. Check if Admin exists in database
+    console.log(`Checking DB for admin: ${email}`);
     let adminUser = await User.findOne({ email, role: 'admin' });
 
     if (adminUser) {
+        process.stdout.write(`Admin found in DB. Comparing passwords... `);
         const isMatch = await adminUser.matchPassword(password);
         if (!isMatch) {
-            console.warn(`❌ Admin login failed (DB): ${email}`);
+            console.log('MATCH FAILED');
+            console.warn(`Admin login failed (DB): ${email}`);
             return res.status(401).json({ message: 'Invalid admin credentials' });
         }
+        console.log('MATCH SUCCESS');
     } else {
+        process.stdout.write(`Admin NOT found in DB. Checking hardcoded fallback... `);
         // 2. Fallback to hardcoded admin for first-time migration
         if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-            console.log(`🚀 Initial admin login detected. Checking if user exists with this email...`);
+            console.log('HARDCODED MATCH');
+            console.log(`Initial admin login detected. Checking if user exists with this email...`);
             
             // Check if ANY user exists with this email (e.g. regular user)
             let existingUser = await User.findOne({ email: ADMIN_EMAIL });
             
             if (existingUser) {
-                console.log(`🔄 Existing user found. Promoting to Admin role...`);
+                console.log(`Existing user found. Promoting to Admin role...`);
                 existingUser.role = 'admin';
                 existingUser.password = ADMIN_PASSWORD; // Set the default password if they had none (Google) or update it
                 existingUser.isVerified = true;
                 await existingUser.save();
                 adminUser = existingUser;
             } else {
-                console.log(`✨ No user found. Creating brand new Admin...`);
+                console.log(`No user found. Creating brand new Admin...`);
                 adminUser = await User.create({
                     name: 'Admin',
                     email: ADMIN_EMAIL,
@@ -62,12 +68,13 @@ router.post('/login', async (req, res) => {
                 });
             }
         } else {
-            console.warn(`❌ Admin login failed (Hardcoded/Not Found): ${email}`);
+            console.log('HARDCODED FAILED');
+            console.warn(`Admin login failed (Hardcoded/Not Found): ${email}`);
             return res.status(401).json({ message: 'Invalid admin credentials' });
         }
     }
 
-    console.log(`✅ Admin logged in: ${email}`);
+    console.log(`Admin logged in: ${email}`);
     const token = jwt.sign({ email: adminUser.email, role: 'admin', id: adminUser._id }, ADMIN_JWT_SECRET, { expiresIn: '8h' });
     res.json({ token, admin: { email: adminUser.email, name: adminUser.name } });
 });
@@ -92,7 +99,7 @@ router.put('/change-password', adminProtect, async (req, res) => {
         admin.password = newPassword;
         await admin.save();
 
-        console.log(`✅ Admin password changed for: ${admin.email}`);
+        console.log(`Admin password changed for: ${admin.email}`);
         res.json({ message: 'Password changed successfully' });
     } catch (err) {
         console.error('Admin Password Change Error:', err);
@@ -336,10 +343,10 @@ router.put('/foods/:id', adminProtect, async (req, res) => {
     try {
         const food = await FoodItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!food) return res.status(404).json({ message: 'Food item not found' });
-        console.log(`✅ Food updated: ${food.name}`);
+        console.log(`Food updated: ${food.name}`);
         res.json(food);
     } catch (err) {
-        console.error('❌ Food Update Error:', err);
+        console.error('Food Update Error:', err);
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
 });
@@ -369,10 +376,10 @@ router.put('/restaurants/:id', adminProtect, async (req, res) => {
     try {
         const r = await Restaurant.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!r) return res.status(404).json({ message: 'Restaurant not found' });
-        console.log(`✅ Restaurant updated: ${r.name}`);
+        console.log(`Restaurant updated: ${r.name}`);
         res.json(r);
     } catch (err) {
-        console.error('❌ Restaurant Update Error:', err);
+        console.error('Restaurant Update Error:', err);
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
 });
@@ -431,12 +438,12 @@ router.get('/stats', adminProtect, async (req, res) => {
 // ─────────────────────────────────────────────
 router.post('/upload', adminProtect, upload.single('image'), (req, res) => {
     if (!req.file) {
-        console.warn('⚠️ No file provided in upload request');
+        console.warn('No file provided in upload request');
         return res.status(400).json({ message: 'No file uploaded' });
     }
     // Cloudinary returns the secure_url in req.file.path when using multer-storage-cloudinary
     const imageUrl = req.file.path;
-    console.log(`✅ File uploaded to Cloudinary: ${imageUrl}`);
+    console.log(`File uploaded to Cloudinary: ${imageUrl}`);
     res.json({ url: imageUrl });
 });
 

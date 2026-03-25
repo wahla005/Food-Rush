@@ -43,13 +43,13 @@ const HomePage = () => {
                 <section className="hero-section">
                     <div className="hero-content">
                         <h1 className="hero-title">
-                            Hey {user?.name?.split(' ')[0]} 👋<br />
+                            Hey {user?.name?.split(' ')[0]}<br />
                             <span>What are you craving?</span>
                         </h1>
                         <p className="hero-subtitle">Order from the best restaurants near you, delivered fast.</p>
                         <div className="hero-offers">
-                            <div className="offer-chip">🎉 Free delivery on first order</div>
-                            <div className="offer-chip">⚡ 30-min delivery</div>
+                            <div className="offer-chip">Free delivery on first order</div>
+                            <div className="offer-chip">30-min delivery</div>
                         </div>
                         <button className="btn-orange" onClick={() => navigate('/menu')}>
                             Explore Menu <FiArrowRight />
@@ -113,7 +113,7 @@ const HomePage = () => {
                 {/* Featured Dishes */}
                 <section className="section">
                     <div className="section-header">
-                        <h2 className="section-title">🌟 Top Rated Dishes</h2>
+                        <h2 className="section-title">Top Rated Dishes</h2>
                         <Link to="/menu" className="see-all">See all →</Link>
                     </div>
                     {loading ? (

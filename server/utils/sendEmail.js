@@ -3,7 +3,7 @@ const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async ({ email, subject, message }) => {
-    console.log(`📧 Resend: Sending email to: ${email}`);
+    console.log(`Resend: Sending email to: ${email}`);
     
     try {
         const { data, error } = await resend.emails.send({
@@ -15,14 +15,14 @@ const sendEmail = async ({ email, subject, message }) => {
         });
 
         if (error) {
-            console.error(`❌ Resend Error: ${error.message}`);
+            console.error(`Resend Error: ${error.message}`);
             throw new Error(error.message);
         }
 
-        console.log(`✅ Email sent via Resend! ID: ${data.id}`);
+        console.log(`Email sent via Resend! ID: ${data.id}`);
         return data;
     } catch (error) {
-        console.error(`❌ Resend Exception: ${error.message}`);
+        console.error(`Resend Exception: ${error.message}`);
         throw error;
     }
 };

@@ -196,12 +196,12 @@ const CheckoutPage = () => {
                     <div className="promo-banners">
                         {isFirstOrder && (
                             <div className="promo-banner promo-green">
-                                🎉 <strong>Free Delivery applied!</strong> Your first order — no delivery charges.
+                                <strong>Free Delivery applied!</strong> Your first order — no delivery charges.
                             </div>
                         )}
                         {pizzaPromoItems.length > 0 && (
                             <div className="promo-banner promo-orange" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}>
-                                🍕 <strong>Today's Special —</strong> Extra 25% OFF applied on:{' '}
+                                <strong>Today's Special —</strong> Extra 25% OFF applied on:{' '}
                                 {pizzaPromoItems.map(i => i.name).join(', ')}
                             </div>
                         )}
@@ -211,7 +211,7 @@ const CheckoutPage = () => {
                 {/* ── Minimum Order Warning ── */}
                 {subtotal < minOrder && (
                     <div className="promo-banner promo-red" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', marginBottom: '1.5rem' }}>
-                        ⚠️ <strong>Minimum Order Required:</strong> The minimum order amount for {checkoutRestName} is Rs. {minOrder}.
+                        <strong>Minimum Order Required:</strong> The minimum order amount for {checkoutRestName} is Rs. {minOrder}.
                         Current subtotal: <strong>Rs. {subtotal}</strong>.
                         Please add <strong>Rs. {minOrder - subtotal}</strong> more worth of items to proceed.
                     </div>
@@ -220,7 +220,7 @@ const CheckoutPage = () => {
                 <div className="checkout-layout">
                     {/* Form */}
                     <form onSubmit={handleOrder} className="checkout-form">
-                        <h3>📍 Delivery Address</h3>
+                        <h3>Delivery Address</h3>
                         <div className="form-row">
                             <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} className="input-field" required />
                             <input
@@ -237,12 +237,12 @@ const CheckoutPage = () => {
                         <input name="address" placeholder="Street Address" value={form.address} onChange={handleChange} className="input-field" required />
                         <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="input-field" required />
 
-                        <h3 style={{ marginTop: '1.5rem' }}>💳 Payment Method</h3>
+                        <h3 style={{ marginTop: '1.5rem' }}>Payment Method</h3>
                         <div className="payment-options">
                             {['COD', 'Card', 'EasyPaisa', 'JazzCash'].map(m => (
                                 <label key={m} className={`payment-option ${form.paymentMethod === m ? 'payment-active' : ''}`}>
                                     <input type="radio" name="paymentMethod" value={m} checked={form.paymentMethod === m} onChange={handleChange} />
-                                    {m === 'COD' ? '💵 Cash on Delivery' : m === 'Card' ? '💳 Credit/Debit Card' : m === 'EasyPaisa' ? '📱 EasyPaisa' : '📱 JazzCash'}
+                                    {m === 'COD' ? 'Cash on Delivery' : m === 'Card' ? 'Credit/Debit Card' : m === 'EasyPaisa' ? 'EasyPaisa' : 'JazzCash'}
                                 </label>
                             ))}
                         </div>
@@ -281,7 +281,7 @@ const CheckoutPage = () => {
                                     {/* Step 1: Send money to merchant */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            📲 Step 1 — Send Rs. {grandTotal} to our {form.paymentMethod} account:
+                                            Step 1 — Send Rs. {grandTotal} to our {form.paymentMethod} account:
                                         </p>
                                         <div style={{
                                             display: 'flex', alignItems: 'center', gap: '0.7rem',
@@ -315,7 +315,7 @@ const CheckoutPage = () => {
                                     {/* Step 2: Enter registered number */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            📞 Step 2 — Enter your registered {form.paymentMethod} number:
+                                            Step 2 — Enter your registered {form.paymentMethod} number:
                                         </p>
                                         <input
                                             className="input-field"
@@ -332,7 +332,7 @@ const CheckoutPage = () => {
                                     {/* Step 3: Enter TXN reference */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            🔖 Step 3 — Enter Transaction ID / Reference number:
+                                            Step 3 — Enter Transaction ID / Reference number:
                                         </p>
                                         <input
                                             className="input-field"
@@ -343,14 +343,14 @@ const CheckoutPage = () => {
                                             style={{ background: 'white', color: '#111', borderColor: brand + '55' }}
                                         />
                                         <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.3rem' }}>
-                                            ℹ️ You'll find the Transaction ID in your {form.paymentMethod} app under "Transaction History".
+                                            You'll find the Transaction ID in your {form.paymentMethod} app under "Transaction History".
                                         </p>
                                     </div>
 
                                     {/* Step 4: Upload screenshot */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            📸 Step 4 — Upload a screenshot of your payment:
+                                            Step 4 — Upload a screenshot of your payment:
                                         </p>
                                         <label style={{
                                             display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -364,7 +364,6 @@ const CheckoutPage = () => {
                                                 <img src={paymentProofPreview} alt="Proof preview" style={{ maxHeight: 140, borderRadius: 8, objectFit: 'contain' }} />
                                             ) : (
                                                 <>
-                                                    <span style={{ fontSize: '2rem' }}>🖼️</span>
                                                     <span style={{ fontSize: '0.82rem', color: '#6b7280', fontWeight: 500 }}>
                                                         {uploadingProof ? 'Uploading...' : 'Click to choose screenshot'}
                                                     </span>
@@ -397,7 +396,7 @@ const CheckoutPage = () => {
                                         </label>
                                         {paymentProofUrl && (
                                             <p style={{ fontSize: '0.75rem', color: brand, marginTop: '0.3rem', fontWeight: 600 }}>
-                                                ✓ Screenshot uploaded. Admin will verify before confirming.
+                                                Screenshot uploaded. Admin will verify before confirming.
                                             </p>
                                         )}
                                     </div>
@@ -405,7 +404,7 @@ const CheckoutPage = () => {
                                     {/* Warning notice */}
                                     <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '0.7rem 1rem' }}>
                                         <p style={{ fontSize: '0.8rem', color: '#92400e', margin: 0, fontWeight: 600 }}>
-                                            ⏳ Note: Your order status will be <strong>"Payment Pending"</strong> until the admin verifies your payment. You'll be notified once confirmed.
+                                            Note: Your order status will be <strong>"Payment Pending"</strong> until the admin verifies your payment. You'll be notified once confirmed.
                                         </p>
                                     </div>
                                 </div>
@@ -452,7 +451,7 @@ const CheckoutPage = () => {
                                 {isFirstOrder ? (
                                     <>
                                         <span style={{ textDecoration: 'line-through', color: '#9ca3af', marginRight: 4, fontSize: '0.85rem' }}>Rs. {BASE_DELIVERY_FEE}</span>
-                                        <span style={{ color: '#16a34a', fontWeight: 700 }}>FREE 🎉</span>
+                                        <span style={{ color: '#16a34a', fontWeight: 700 }}>FREE</span>
                                     </>
                                 ) : (
                                     `Rs. ${deliveryFee}`

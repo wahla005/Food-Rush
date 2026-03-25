@@ -135,12 +135,12 @@ const Navbar = () => {
                         </Link>
                     ))}
 
-                    <Link to="/profile" className="mobile-link" onClick={() => setMenuOpen(false)}>👤 Profile</Link>
+                    <Link to="/profile" className="mobile-link" onClick={() => setMenuOpen(false)}>Profile</Link>
                     <button
                         className="mobile-link"
                         style={{ color: '#ef4444', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', width: '100%', padding: '0.75rem 1.5rem' }}
                         onClick={handleLogout}>
-                        🚪 Logout
+                        Logout
                     </button>
                 </div>
             )}

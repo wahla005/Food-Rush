@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ── Reset ── */
+/* -- Reset -- */
 *,
 *::before,
 *::after {
@@ -67,7 +67,7 @@ img {
   display: block;
 }
 
-/* ── App Layout ── */
+/* -- App Layout -- */
 .app-page {
   min-height: 100vh;
   background: var(--light-gray);
@@ -86,7 +86,7 @@ img {
   margin-bottom: 1.5rem;
 }
 
-/* ── Navbar ── */
+/* -- Navbar -- */
 .navbar {
   background: var(--white);
   border-bottom: 1px solid var(--border);
@@ -311,7 +311,7 @@ img {
   border-bottom: 1px solid var(--border);
 }
 
-/* ── Buttons ── */
+/* -- Buttons -- */
 .btn-orange {
   display: inline-flex;
   align-items: center;
@@ -520,7 +520,7 @@ img {
   background: var(--orange-dark);
 }
 
-/* ── Auth pages ── */
+/* -- Auth pages -- */
 .auth-page {
   min-height: 100vh;
   background: #f0f0f0;
@@ -904,7 +904,7 @@ img {
   color: #fff;
 }
 
-/* ── Hero ── */
+/* -- Hero -- */
 [data-theme='dark'] .hero-section {
   background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
 }
@@ -974,7 +974,7 @@ img {
   object-fit: cover;
 }
 
-/* ── Sections ── */
+/* -- Sections -- */
 .section {
   margin-bottom: 3rem;
 }
@@ -998,7 +998,7 @@ img {
   color: var(--orange);
 }
 
-/* ── Category grid ── */
+/* -- Category grid -- */
 .category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -1050,7 +1050,7 @@ img {
   color: var(--dark);
 }
 
-/* ── Offer banner ── */
+/* -- Offer banner -- */
 .offer-banner {
   background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
   border-radius: 20px;
@@ -1081,7 +1081,7 @@ img {
   border-radius: 16px;
 }
 
-/* ── Restaurant grid ── */
+/* -- Restaurant grid -- */
 .restaurant-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1178,7 +1178,7 @@ img {
   margin-top: 0.35rem;
 }
 
-/* ── Food grid & cards ── */
+/* -- Food grid & cards -- */
 .food-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -1268,7 +1268,7 @@ img {
   border-radius: 50px;
 }
 
-/* ── Menu page ── */
+/* -- Menu page -- */
 .menu-header {
   margin-bottom: 1.5rem;
 }
@@ -1347,7 +1347,7 @@ img {
   font-weight: 700;
 }
 
-/* ── Restaurant Hero ── */
+/* -- Restaurant Hero -- */
 .rest-hero {
   position: relative;
   height: 280px;
@@ -1397,7 +1397,7 @@ img {
   gap: 0.3rem;
 }
 
-/* ── Food Details ── */
+/* -- Food Details -- */
 .food-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1524,7 +1524,7 @@ img {
   text-align: center;
 }
 
-/* ── Reviews ── */
+/* -- Reviews -- */
 .reviews-section {
   background: var(--white);
   border-radius: 20px;
@@ -1640,7 +1640,7 @@ img {
   padding: 1rem;
 }
 
-/* ── Cart ── */
+/* -- Cart -- */
 .empty-cart {
   display: flex;
   flex-direction: column;
@@ -1784,7 +1784,7 @@ img {
   margin-top: 0.75rem;
 }
 
-/* ── Checkout ── */
+/* -- Checkout -- */
 .checkout-layout {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -1849,7 +1849,7 @@ img {
   border-radius: var(--radius);
 }
 
-/* ── Order Confirmation ── */
+/* -- Order Confirmation -- */
 .confirm-card {
   max-width: 600px;
   margin: 0 auto;
@@ -2004,7 +2004,7 @@ img {
   flex-wrap: wrap;
 }
 
-/* ── Orders ── */
+/* -- Orders -- */
 .orders-list {
   display: flex;
   flex-direction: column;
@@ -2081,7 +2081,7 @@ img {
   gap: 0.5rem;
 }
 
-/* ── Profile ── */
+/* -- Profile -- */
 .profile-header {
   display: flex;
   align-items: center;
@@ -2307,7 +2307,7 @@ img {
 
 
 
-/* ── Skeletons & loading ── */
+/* -- Skeletons & loading -- */
 [data-theme='dark'] .skeleton-card {
   background: linear-gradient(90deg, #222 25%, #333 50%, #222 75%);
 }
@@ -2360,7 +2360,7 @@ img {
   margin-bottom: 1.5rem;
 }
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 900px) {
   .category-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -2484,9 +2484,9 @@ img {
 
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    DISCOUNT BADGES & PRICES (User-facing)
-═══════════════════════════════════════════ */
+------------------------------------------- */
 
 /* Badge on food card image (Menu & Restaurant pages) */
 .discount-badge-card {
@@ -2537,9 +2537,9 @@ img {
   font-weight: 800;
 }
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    PROMO BANNERS (Checkout page)
-═══════════════════════════════════════════ */
+------------------------------------------- */
 .promo-banners {
   display: flex;
   flex-direction: column;

@@ -41,7 +41,7 @@ const OrderConfirmationPage = () => {
                         {statusSteps.slice(0, 4).map((step, i) => (
                             <React.Fragment key={step}>
                                 <div className={`tracker-step ${i <= currentStep ? 'tracker-active' : ''}`}>
-                                    <div className="tracker-dot">{i <= currentStep ? '✓' : i + 1}</div>
+                                    <div className="tracker-dot">{i <= currentStep ? 'Done' : i + 1}</div>
                                     <span>{step}</span>
                                 </div>
                                 {i < 3 && <div className={`tracker-line ${i < currentStep ? 'tracker-line-active' : ''}`} />}
@@ -55,7 +55,7 @@ const OrderConfirmationPage = () => {
                         {order.items?.map((item, i) => (
                             <div key={i} className="confirm-item">
                                 <img src={getImageUrl(item.image)} alt={item.name} className="confirm-item-img" />
-                                <span>{item.name} × {item.quantity}</span>
+                                <span>{item.name} x {item.quantity}</span>
                                 <span>Rs. {item.price * item.quantity}</span>
                             </div>
                         ))}

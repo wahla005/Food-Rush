@@ -13,10 +13,10 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 // Helper: generate JWT
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/google
 // Frontend sends: { googleId, email, name } (already verified via Google's userinfo API)
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/google', async (req, res) => {
     try {
         const { googleId, email, name } = req.body;
@@ -33,7 +33,7 @@ router.post('/google', async (req, res) => {
                 await user.save();
             }
         } else {
-            // Brand new Google user — auto-create without password
+            // Brand new Google user - auto-create without password
             user = await User.create({
                 name,
                 email,
@@ -54,9 +54,9 @@ router.post('/google', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/register
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -131,9 +131,9 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/resend-otp
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/resend-otp', async (req, res) => {
     try {
         const { email, type } = req.body; // type: 'register' or 'reset'
@@ -184,9 +184,9 @@ router.post('/resend-otp', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/verify-otp
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/verify-otp', async (req, res) => {
     try {
         const { email, otp } = req.body;
@@ -209,9 +209,9 @@ router.post('/verify-otp', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/login
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -251,9 +251,9 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/forgot-password
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -293,9 +293,9 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/verify-reset-otp
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/verify-reset-otp', async (req, res) => {
     try {
         const { email, otp } = req.body;
@@ -312,9 +312,9 @@ router.post('/verify-reset-otp', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/reset-password
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/reset-password', async (req, res) => {
     try {
         const { email, otp, newPassword } = req.body;
@@ -336,14 +336,14 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // GET /api/auth/me  (protected)
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.get('/me', protect, async (req, res) => {
     res.json({ user: req.user });
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // POST /api/auth/upload  (protected)
 router.post('/upload', protect, upload.single('image'), async (req, res) => {
     try {
@@ -410,9 +410,9 @@ router.put('/profile', protect, async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // PUT /api/auth/change-password  (protected)
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.put('/change-password', protect, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;

@@ -13,14 +13,14 @@ const { upload } = require('../config/cloudinary');
 const BASE_DELIVERY_FEE = 59;
 
 
-// POST /api/orders/upload-proof  — upload payment screenshot (protected)
+// POST /api/orders/upload-proof  - upload payment screenshot (protected)
 router.post('/upload-proof', protect, upload.single('proof'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
     // Cloudinary returns the secure_url in req.file.path
     res.json({ url: req.file.path });
 });
 
-// POST /api/orders  — place order
+// POST /api/orders  - place order
 router.post('/', protect, async (req, res) => {
     try {
         const { restaurantName, items: incomingItems, deliveryAddress, paymentMethod, restaurant,
@@ -116,7 +116,7 @@ router.post('/', protect, async (req, res) => {
     }
 });
 
-// GET /api/orders/my  — current user orders
+// GET /api/orders/my  - current user orders
 router.get('/my', protect, async (req, res) => {
     try {
         const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });

@@ -88,7 +88,7 @@ const Navbar = () => {
                         {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}
                     </Link>
 
-                    {/* Profile dropdown — uses click-outside ref, NOT onMouseLeave */}
+                    {/* Profile dropdown - uses click-outside ref, NOT onMouseLeave */}
                     <div className="profile-menu" ref={dropdownRef}>
                         <button className="profile-btn" onClick={() => setProfileOpen(p => !p)}>
                             <div className="avatar-circle">

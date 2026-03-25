@@ -31,7 +31,7 @@ export const CartProvider = ({ children }) => {
         const disc = item.discount || 0;
         const effectivePrice = disc > 0 ? Math.round(item.price * (1 - disc / 100)) : item.price;
 
-        // Show toast BEFORE setCart — StrictMode double-invokes updater functions
+        // Show toast BEFORE setCart - StrictMode double-invokes updater functions
         const alreadyInCart = cart.find(i => i._id === item._id);
         if (alreadyInCart) {
             toast.success('Quantity updated');

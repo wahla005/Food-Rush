@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import API from '../api/axios';
 
 import { getImageUrl } from '../utils/image';
-import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
+import { getPromoPrice } from '../utils/promo';
 
 
 const MenuPage = () => {
@@ -110,7 +110,6 @@ const MenuPage = () => {
                         {foods.map(f => {
                             const disc = f.discount || 0;
                             const finalPrice = getPromoPrice(f);
-                            const isPizza = hasPizzaPromo(f);
                             const hasAnyDiscount = finalPrice < f.price;
 
                             return (
@@ -119,17 +118,6 @@ const MenuPage = () => {
                                         <img src={getImageUrl(f.image)} alt={f.name} className="food-card-img" />
                                         {disc > 0 && (
                                             <span className="discount-badge-card">{disc}% OFF</span>
-                                        )}
-                                        {isPizza && (
-                                            <span style={{
-                                                position: 'absolute', top: 10, left: 10,
-                                                background: '#f59e0b', color: 'white',
-                                                fontSize: '0.65rem', fontWeight: 800,
-                                                padding: '0.2rem 0.5rem', borderRadius: 4,
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                            }}>
-                                                Pizza SPECIAL
-                                            </span>
                                         )}
                                     </Link>
                                     <div className="food-card-body">

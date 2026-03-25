@@ -4,7 +4,7 @@ const Restaurant = require('./models/Restaurant');
 const FoodItem = require('./models/FoodItem');
 const Category = require('./models/Category');
 
-// Verified Unsplash food photo IDs — matched to actual food
+// Verified Unsplash food photo IDs - matched to actual food
 const IMG = (id) => `https://images.unsplash.com/photo-${id}?w=500&h=350&fit=crop&q=80`;
 const IMG_RESTO = (id) => `https://images.unsplash.com/photo-${id}?w=700&h=450&fit=crop&q=80`;
 

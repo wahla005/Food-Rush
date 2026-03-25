@@ -22,13 +22,13 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 
-// ── Guard ──────────────────────────────────
+// -- Guard ----------------------------------
 const PrivateRoute = ({ children }) => {
   const { token } = useAuth();
   return token ? children : <Navigate to="/login" replace />;
 };
 
-// ── Routes ──────────────────────────────────
+// -- Routes ----------------------------------
 const AppRoutes = () => (
   <Routes>
     {/* Default */}

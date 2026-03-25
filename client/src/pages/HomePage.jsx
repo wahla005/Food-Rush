@@ -81,7 +81,7 @@ const HomePage = () => {
                 <section className="section">
                     <div className="section-header">
                         <h2 className="section-title">Popular Restaurants</h2>
-                        <Link to="/restaurants" className="see-all">See all →</Link>
+                        <Link to="/restaurants" className="see-all">See all &gt;</Link>
                     </div>
                     {loading ? (
                         <div className="loading-grid">
@@ -114,7 +114,7 @@ const HomePage = () => {
                 <section className="section">
                     <div className="section-header">
                         <h2 className="section-title">Top Rated Dishes</h2>
-                        <Link to="/menu" className="see-all">See all →</Link>
+                        <Link to="/menu" className="see-all">See all &gt;</Link>
                     </div>
                     {loading ? (
                         <div className="loading-grid">

@@ -76,7 +76,7 @@ const LoginPage = () => {
     return (
         <div className="auth-page">
             <div className="auth-container">
-                {/* ── Left Panel ── */}
+                {/* -- Left Panel -- */}
                 <div className="auth-left">
                     <div className="auth-form-wrapper">
                         <h1 className="auth-title">Welcome Back!</h1>
@@ -116,7 +116,7 @@ const LoginPage = () => {
                             <span className="divider-line" />
                         </div>
 
-                        {/* Google button — LIVE */}
+                        {/* Google button - LIVE */}
                         <button
                             type="button"
                             className="btn-social"
@@ -134,7 +134,7 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* ── Right Panel ── */}
+                {/* -- Right Panel -- */}
                 <div className="auth-right">
                     <img
                         src={slides[activeSlide]}

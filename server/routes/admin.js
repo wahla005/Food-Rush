@@ -12,9 +12,9 @@ const { upload } = require('../config/cloudinary');
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // Hardcoded admin credentials
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 const ADMIN_EMAIL = 'fwahla970@gmail.com';
 const ADMIN_PASSWORD = 'faizan123';
 
@@ -371,7 +371,7 @@ router.post('/restaurants', adminProtect, async (req, res) => {
     }
 });
 
-// PUT /api/admin/restaurants/:id  — update any field (e.g. isOpen)
+// PUT /api/admin/restaurants/:id  - update any field (e.g. isOpen)
 router.put('/restaurants/:id', adminProtect, async (req, res) => {
     try {
         const r = await Restaurant.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -433,9 +433,9 @@ router.get('/stats', adminProtect, async (req, res) => {
     }
 });
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // Image Upload Route (Cloudinary)
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 router.post('/upload', adminProtect, upload.single('image'), (req, res) => {
     if (!req.file) {
         console.warn('No file provided in upload request');

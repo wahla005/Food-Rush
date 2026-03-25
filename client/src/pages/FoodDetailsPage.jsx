@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
 import { getImageUrl } from '../utils/image';
-import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
+import { getPromoPrice } from '../utils/promo';
 
 const FoodDetailsPage = () => {
     const { id } = useParams();
@@ -28,10 +28,9 @@ const FoodDetailsPage = () => {
         for (let i = 0; i < qty; i++) addToCart(food, food.restaurant?._id || food.restaurant, food.restaurant?.name || '');
     };
 
-    // Compute discounted price (Admin discount + Pizza promo)
+    // Compute discounted price (Admin discount)
     const disc = food?.discount || 0;
     const effectivePrice = getPromoPrice(food);
-    const isPizzaPromo = hasPizzaPromo(food);
 
     const handleReview = async (e) => {
         e.preventDefault();
@@ -104,11 +103,6 @@ const FoodDetailsPage = () => {
                                         <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.78rem', fontWeight: 700, padding: '0.1rem 0.5rem', borderRadius: 50 }}>{disc}% OFF</span>
                                     </div>
                                 )}
-                                {isPizzaPromo && (
-                                    <div style={{ background: '#fff7ed', color: '#ea580c', fontSize: '0.75rem', fontWeight: 800, padding: '0.25rem 0.75rem', borderRadius: 8, marginBottom: '0.5rem', display: 'inline-block' }}>
-                                        PIZZA SPECIAL: Extra 25% OFF applied
-                                    </div>
-                                )}
                                 <span className="food-detail-price">Rs. {effectivePrice * qty}</span>
                             </div>
                             <div className="qty-selector">
@@ -131,7 +125,7 @@ const FoodDetailsPage = () => {
                                         }
                                     })}
                                 >
-                                    Buy Now — Rs. {effectivePrice * qty}
+                                    Buy Now - Rs. {effectivePrice * qty}
                                 </button>
                                 <button className="btn-add-cart-outline" onClick={handleAddToCart}>
                                     Add to Cart
@@ -156,7 +150,7 @@ const FoodDetailsPage = () => {
                                         <div className="review-avatar">{rev.userName?.[0]?.toUpperCase()}</div>
                                         <div>
                                             <p className="review-name">{rev.userName}</p>
-                                            <div className="review-stars">{'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}</div>
+                                            <div className="review-stars">Rating: {rev.rating}/5</div>
                                         </div>
                                     </div>
                                     <p className="review-comment">{rev.comment}</p>

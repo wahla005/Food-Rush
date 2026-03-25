@@ -53,7 +53,7 @@ const AdminLoginPage = () => {
 
                 <h1 className="admin-login-title">Admin Portal</h1>
                 <p className="admin-login-subtitle">
-                    Restricted access — authorized personnel only
+                    Restricted access - authorized personnel only
                 </p>
 
                 <form onSubmit={handleSubmit} className="admin-login-form">

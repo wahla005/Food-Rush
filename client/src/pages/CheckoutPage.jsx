@@ -6,12 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
 
-// ─── Promo rules ────────────────────────────────────────────────────────────
+// --- Promo rules ------------------------------------------------------------
 // Rule 1: Free delivery on first order (checked server-side via order history)
-// Rule 2: Today's Special — extra 25% off Pizza items whose base price > Rs. 1500
-// ─────────────────────────────────────────────────────────────────────────────
-
-import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
+import { getPromoPrice } from '../utils/promo';
 
 const BASE_DELIVERY_FEE = 59;
 
@@ -50,12 +47,12 @@ const CheckoutPage = () => {
         transactionRef: '',    // transaction ID/ref after payment
     });
 
-    // ── Decide what items to checkout ──────────────────────────────────────────
+    // --- Decide what items to checkout ------------------------------------------
     const itemsToProcess = directItem ? [directItem] : cart;
     const checkoutRestId = directItem ? directItem.restaurantId : cartRestId;
     const checkoutRestName = directItem ? directItem.restaurantName : cartRestName;
 
-    // ── Check first-order status ──────────────────────────────────────────
+    // --- Check first-order status ------------------------------------------
     useEffect(() => {
         const checkFirstOrder = async () => {
             try {
@@ -83,19 +80,16 @@ const CheckoutPage = () => {
         fetchMinOrder();
     }, [checkoutRestId]);
 
-    // ── Compute per-item final prices (admin discount + Pizza promo stacked) ──
+    // --- Compute per-item final prices (admin discount) --
     const enrichedCart = itemsToProcess.map(item => {
         const finalPrice = getPromoPrice(item);
-        const hasPizzaPromoActive = hasPizzaPromo(item);
-        return { ...item, finalPrice, hasPizzaPromo: hasPizzaPromoActive };
+        return { ...item, finalPrice };
     });
 
     const subtotal = enrichedCart.reduce((s, i) => s + i.finalPrice * i.quantity, 0);
     const deliveryFee = isFirstOrder ? 0 : restDeliveryFee;
     const grandTotal = subtotal + deliveryFee;
 
-    // ── Count active promos for display ──────────────────────────────────
-    const pizzaPromoItems = enrichedCart.filter(i => i.hasPizzaPromo);
 
     // Pakistani phone format: 03XX-XXXXXXX (11 digits)
     const PK_PHONE_REGEX = /^03\d{2}-\d{7}$/;
@@ -164,7 +158,6 @@ const CheckoutPage = () => {
                 paymentProof: paymentProofUrl || undefined,
                 promos: {
                     freeDelivery: isFirstOrder,
-                    pizzaDiscount: pizzaPromoItems.length > 0,
                 },
             });
 
@@ -191,24 +184,16 @@ const CheckoutPage = () => {
             <main className="page-content">
                 <h1 className="page-title">Checkout</h1>
 
-                {/* ── Active Promo Banners ── */}
-                {!promoLoading && (isFirstOrder || pizzaPromoItems.length > 0) && (
+                {/* --- Active Promo Banners --- */}
+                {!promoLoading && isFirstOrder && (
                     <div className="promo-banners">
-                        {isFirstOrder && (
-                            <div className="promo-banner promo-green">
-                                <strong>Free Delivery applied!</strong> Your first order — no delivery charges.
-                            </div>
-                        )}
-                        {pizzaPromoItems.length > 0 && (
-                            <div className="promo-banner promo-orange" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}>
-                                <strong>Today's Special —</strong> Extra 25% OFF applied on:{' '}
-                                {pizzaPromoItems.map(i => i.name).join(', ')}
-                            </div>
-                        )}
+                        <div className="promo-banner promo-green">
+                            <strong>Free Delivery applied!</strong> Your first order - no delivery charges.
+                        </div>
                     </div>
                 )}
 
-                {/* ── Minimum Order Warning ── */}
+                {/* -- Minimum Order Warning -- */}
                 {subtotal < minOrder && (
                     <div className="promo-banner promo-red" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', marginBottom: '1.5rem' }}>
                         <strong>Minimum Order Required:</strong> The minimum order amount for {checkoutRestName} is Rs. {minOrder}.
@@ -256,7 +241,7 @@ const CheckoutPage = () => {
                             </div>
                         )}
 
-                        {/* ── EasyPaisa / JazzCash Instructions ── */}
+                        {/* --- EasyPaisa / JazzCash Instructions --- */}
                         {['EasyPaisa', 'JazzCash'].includes(form.paymentMethod) && (() => {
                             const acct = PAYMENT_ACCOUNTS[form.paymentMethod];
                             const isEP = form.paymentMethod === 'EasyPaisa';
@@ -281,7 +266,7 @@ const CheckoutPage = () => {
                                     {/* Step 1: Send money to merchant */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            Step 1 — Send Rs. {grandTotal} to our {form.paymentMethod} account:
+                                            Step 1 - Send Rs. {grandTotal} to our {form.paymentMethod} account:
                                         </p>
                                         <div style={{
                                             display: 'flex', alignItems: 'center', gap: '0.7rem',
@@ -307,7 +292,7 @@ const CheckoutPage = () => {
                                                     fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer',
                                                 }}
                                             >
-                                                {copiedAccount ? '✓ Copied' : 'Copy'}
+                                                {copiedAccount ? 'Copied' : 'Copy'}
                                             </button>
                                         </div>
                                     </div>
@@ -315,7 +300,7 @@ const CheckoutPage = () => {
                                     {/* Step 2: Enter registered number */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            Step 2 — Enter your registered {form.paymentMethod} number:
+                                            Step 2 - Enter your registered {form.paymentMethod} number:
                                         </p>
                                         <input
                                             className="input-field"
@@ -332,7 +317,7 @@ const CheckoutPage = () => {
                                     {/* Step 3: Enter TXN reference */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            Step 3 — Enter Transaction ID / Reference number:
+                                            Step 3 - Enter Transaction ID / Reference number:
                                         </p>
                                         <input
                                             className="input-field"
@@ -350,7 +335,7 @@ const CheckoutPage = () => {
                                     {/* Step 4: Upload screenshot */}
                                     <div>
                                         <p style={{ fontWeight: 700, fontSize: '0.88rem', color: brand, marginBottom: '0.4rem' }}>
-                                            Step 4 — Upload a screenshot of your payment:
+                                            Step 4 - Upload a screenshot of your payment:
                                         </p>
                                         <label style={{
                                             display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -416,7 +401,7 @@ const CheckoutPage = () => {
                             style={{ width: '100%', marginTop: '1.5rem', opacity: (subtotal < minOrder) ? 0.6 : 1, cursor: (subtotal < minOrder) ? 'not-allowed' : 'pointer' }}
                             disabled={loading || promoLoading || (subtotal < minOrder)}
                         >
-                            {loading ? 'Placing Order...' : (subtotal < minOrder) ? `Minimum Rs. ${minOrder} Required` : `Place Order — Rs. ${grandTotal}`}
+                            {loading ? 'Placing Order...' : (subtotal < minOrder) ? `Minimum Rs. ${minOrder} Required` : `Place Order - Rs. ${grandTotal}`}
                         </button>
                     </form>
 
@@ -426,12 +411,7 @@ const CheckoutPage = () => {
                         {enrichedCart.map(i => (
                             <div key={i._id} className="summary-item">
                                 <span>
-                                    {i.name} × {i.quantity}
-                                    {i.hasPizzaPromo && (
-                                        <span style={{ fontSize: '0.68rem', background: '#fef3c7', color: '#92400e', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: 50, marginLeft: 5 }}>
-                                            PIZZA 25% OFF
-                                        </span>
-                                    )}
+                                    {i.name} x {i.quantity}
                                 </span>
                                 <span>
                                     {i.finalPrice < i.price && (

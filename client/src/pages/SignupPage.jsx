@@ -82,7 +82,7 @@ const SignupPage = () => {
     return (
         <div className="auth-page">
             <div className="auth-container">
-                {/* ── Left Panel ── */}
+                {/* -- Left Panel -- */}
                 <div className="auth-left">
                     <div className="auth-form-wrapper">
                         <h1 className="auth-title">Create Account</h1>
@@ -153,7 +153,7 @@ const SignupPage = () => {
                     </div>
                 </div>
 
-                {/* ── Right Panel ── */}
+                {/* -- Right Panel -- */}
                 <div className="auth-right">
                     <img
                         src={slides[activeSlide]}

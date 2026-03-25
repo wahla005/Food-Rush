@@ -30,7 +30,7 @@ const ForgotPasswordPage = () => {
         return () => clearInterval(interval);
     }, [step, timer]);
 
-    // ── Step 1: Send OTP ──
+    // -- Step 1: Send OTP --
     const handleSendOtp = async (e) => {
         e.preventDefault();
         if (!email) { toast.error('Enter your email'); return; }
@@ -59,7 +59,7 @@ const ForgotPasswordPage = () => {
             document.getElementById(`fotp-${idx - 1}`)?.focus();
     };
 
-    // ── Step 2: Verify OTP ──
+    // -- Step 2: Verify OTP --
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
         const otpStr = otp.join('');
@@ -92,7 +92,7 @@ const ForgotPasswordPage = () => {
         }
     };
 
-    // ── Step 3: Reset Password ──
+    // -- Step 3: Reset Password --
     const handleResetPassword = async (e) => {
         e.preventDefault();
         if (!newPassword || !confirmPassword) { toast.error('Fill in all fields'); return; }
@@ -117,7 +117,7 @@ const ForgotPasswordPage = () => {
                 <div className="step-indicator">
                     {['Email', 'Verify OTP', 'New Password'].map((label, i) => (
                         <div key={i} className={`step-item ${step === i + 1 ? 'step-active' : step > i + 1 ? 'step-done' : ''}`}>
-                            <div className="step-circle">{step > i + 1 ? '✓' : i + 1}</div>
+                            <div className="step-circle">{step > i + 1 ? 'Done' : i + 1}</div>
                             <span>{label}</span>
                         </div>
                     ))}
@@ -220,7 +220,7 @@ const ForgotPasswordPage = () => {
 
                 <p className="register-row" style={{ textAlign: 'center', marginTop: '1rem' }}>
                     <span className="register-link" style={{ cursor: 'pointer' }} onClick={() => navigate('/login')}>
-                        ← Back to Login
+                    {'<'} Back to Login
                     </span>
                 </p>
             </div>

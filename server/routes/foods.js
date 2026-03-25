@@ -3,7 +3,7 @@ const router = express.Router();
 const FoodItem = require('../models/FoodItem');
 const { protect } = require('../middleware/auth');
 
-// GET /api/foods  — supports ?category=&restaurant=&search=
+// GET /api/foods  - supports ?category=&restaurant=&search=
 router.get('/', async (req, res) => {
     try {
         const filter = {};

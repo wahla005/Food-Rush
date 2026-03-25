@@ -7,13 +7,13 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminForgotPasswordPage from './pages/AdminForgotPasswordPage';
 
-// ── Guard ──────────────────────────────────
+// -- Guard ----------------------------------
 const AdminRoute = ({ children }) => {
     const { adminToken } = useAdminAuth();
     return adminToken ? children : <Navigate to="/login" replace />;
 };
 
-// ── Routes ──────────────────────────────────
+// -- Routes ----------------------------------
 const AppRoutes = () => (
     <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />

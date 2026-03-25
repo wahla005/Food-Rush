@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
-import { getPromoPrice, hasPizzaPromo } from '../utils/promo';
+import { getPromoPrice } from '../utils/promo';
 import { getImageUrl } from '../utils/image';
 
 const BASE_DELIVERY_FEE = 59;
@@ -28,11 +28,10 @@ const CartPage = () => {
         checkFirstOrder();
     }, []);
 
-    // ── Compute final prices with Pizza promo ──────────────────────────
+    // -- Compute final prices (admin discount) --------------------------
     const enrichedCart = cart.map(item => {
         const finalPrice = getPromoPrice(item);
-        const hasPizzaPromoActive = hasPizzaPromo(item);
-        return { ...item, finalPrice, hasPizzaPromo: hasPizzaPromoActive };
+        return { ...item, finalPrice };
     });
 
     const subtotal = enrichedCart.reduce((s, i) => s + i.finalPrice * i.quantity, 0);
@@ -68,11 +67,6 @@ const CartPage = () => {
                                     <div className="cart-item-info">
                                         <h4>
                                             {item.name}
-                                            {item.hasPizzaPromo && (
-                                                <span style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#92400e', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: 50, marginLeft: 8 }}>
-                                                    Pizza SPECIAL
-                                                </span>
-                                            )}
                                         </h4>
                                         {discounted ? (
                                             <p className="cart-item-price">
@@ -113,9 +107,9 @@ const CartPage = () => {
                         <div className="summary-row summary-total"><span>Total</span><span>Rs. {subtotal + deliveryFee}</span></div>
                         <button className="btn-orange" style={{ width: '100%', marginTop: '1rem' }}
                             onClick={() => navigate('/checkout')}>
-                            Proceed to Checkout →
+                            Proceed to Checkout &gt;
                         </button>
-                        <Link to="/menu" className="continue-shopping">← Continue Shopping</Link>
+                        <Link to="/menu" className="continue-shopping">{'<'} Continue Shopping</Link>
                     </div>
                 </div>
             </main>

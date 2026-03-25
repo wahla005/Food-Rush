@@ -296,7 +296,7 @@ const AdminDashboard = () => {
         'Not Received': '#6366f1'
     };
 
-    // Admin confirms digital wallet payment → move to Pending (standard flow)
+    // Admin confirms digital wallet payment -> move to Pending (standard flow)
     const confirmPayment = async (orderId) => {
         if (!window.confirm('Confirm this payment? The order will move to Pending status.')) return;
         try {
@@ -306,7 +306,7 @@ const AdminDashboard = () => {
         } catch { toast.error('Failed to confirm payment'); }
     };
 
-    // Admin declines payment proof → cancel order with reason
+    // Admin declines payment proof -> cancel order with reason
     const declinePayment = async (orderId) => {
         const reason = window.prompt(
             'Enter the reason for declining this payment (this will be shown to the customer):',
@@ -352,7 +352,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="admin-dash-page">
-            {/* ── Admin Navbar ── */}
+            {/* --- Admin Navbar --- */}
             <header className="admin-header">
                 <div className="admin-header-left">
                     <FiShield size={22} className="admin-header-icon" />
@@ -396,7 +396,7 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {/* ── STATS ── */}
+                {/* --- STATS --- */}
                 {tab === 'Stats' && stats && (
                     <div className="stats-grid">
                         <div className="stat-card">
@@ -481,10 +481,10 @@ const AdminDashboard = () => {
                 )}
 
                 {tab === 'Stats' && !stats && (
-                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '3rem' }}>Loading stats…</p>
+                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '3rem' }}>Loading stats...</p>
                 )}
 
-                {/* ── ORDERS ── */}
+                {/* --- ORDERS --- */}
                 {tab === 'Orders' && (
                     <div className="admin-table-wrap">
                         <table className="admin-table">
@@ -533,7 +533,7 @@ const AdminDashboard = () => {
                                                         : o.paymentMethod === 'Card' ? 'Card'
                                                             : o.paymentMethod === 'EasyPaisa' ? 'EasyPaisa'
                                                                 : o.paymentMethod === 'JazzCash' ? 'JazzCash'
-                                                                    : o.paymentMethod || '—'}
+                                                                    : o.paymentMethod || '-'}
                                                 </span>
                                             </td>
                                             <td>
@@ -598,7 +598,7 @@ const AdminDashboard = () => {
                                                                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
                                                                 }}
                                                             >
-                                                                ✓ Confirm
+                                                                Confirm
                                                             </button>
                                                             <button
                                                                 onClick={() => declinePayment(o._id)}
@@ -609,7 +609,7 @@ const AdminDashboard = () => {
                                                                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
                                                                 }}
                                                             >
-                                                                ✕ Decline
+                                                                Decline
                                                             </button>
                                                         </div>
                                                     </div>
@@ -623,7 +623,7 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {/* ── REVIEWS ── */}
+                {/* --- REVIEWS --- */}
                 {tab === 'Reviews' && (
                     <div className="admin-table-wrap">
                         <table className="admin-table">
@@ -705,7 +705,7 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {/* ── FOOD ITEMS ── */}
+                {/* --- FOOD ITEMS --- */}
                 {tab === 'Food Items' && (
                     <>
                         <button className="btn-orange" style={{ marginBottom: '1rem' }} onClick={() => setShowAddFood(true)}>
@@ -843,7 +843,7 @@ const AdminDashboard = () => {
                                                                 fontWeight: 700, fontSize: '0.72rem',
                                                                 fontFamily: "'Inter',sans-serif", cursor: 'pointer',
                                                             }}
-                                                        >✓</button>
+                                                        >Apply</button>
                                                         {disc > 0 && (
                                                             <button
                                                                 onClick={() => {
@@ -857,7 +857,7 @@ const AdminDashboard = () => {
                                                                     fontWeight: 700, fontSize: '0.72rem',
                                                                     fontFamily: "'Inter',sans-serif", cursor: 'pointer',
                                                                 }}
-                                                            >✕</button>
+                                                            >X</button>
                                                         )}
                                                     </div>
                                                     {disc > 0 && (
@@ -878,7 +878,7 @@ const AdminDashboard = () => {
                                                             <span style={{ color: '#34d399', fontWeight: 700 }}>Rs. {finalPrice}</span>
                                                         </span>
                                                     ) : (
-                                                        <span style={{ color: 'rgba(255,255,255,0.6)' }}>—</span>
+                                                        <span style={{ color: 'rgba(255,255,255,0.6)' }}>-</span>
                                                     )}
                                                 </td>
                                                 <td>
@@ -911,7 +911,7 @@ const AdminDashboard = () => {
                     </>
                 )}
 
-                {/* ── RESTAURANTS ── */}
+                {/* --- RESTAURANTS --- */}
                 {tab === 'Restaurants' && (
                     <>
                         <button className="btn-orange" style={{ marginBottom: '1rem' }} onClick={() => setShowAddRestaurant(true)}>
@@ -1007,7 +1007,7 @@ const AdminDashboard = () => {
                                             <td><img src={getImageUrl(r.image)} alt={r.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }} /></td>
                                             <td>{r.name}</td>
                                             <td>{r.cuisine.join(', ')}</td>
-                                            <td style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.address || '—'}</td>
+                                            <td style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.address || '-'}</td>
                                             <td>{r.rating}</td>
                                             <td>
                                                 <button
@@ -1058,7 +1058,7 @@ const AdminDashboard = () => {
                     </>
                 )}
 
-                {/* ── CATEGORIES ── */}
+                {/* --- CATEGORIES --- */}
                 {tab === 'Categories' && (
                     <>
                         <button className="btn-orange" style={{ marginBottom: '1rem' }} onClick={() => setShowAddCategory(true)}>
@@ -1141,7 +1141,7 @@ const AdminDashboard = () => {
                     </>
                 )}
 
-                {/* ── USERS ── */}
+                {/* --- USERS --- */}
                 {tab === 'Users' && (
                     <div className="admin-table-wrap">
                         <table className="admin-table">
@@ -1219,7 +1219,7 @@ const AdminDashboard = () => {
                         </table>
                     </div>
                 )}
-                {/* ── SETTINGS ── */}
+                {/* --- SETTINGS --- */}
                 {tab === 'Settings' && (
                     <div className="admin-settings-container" style={{ maxWidth: '600px', margin: '2rem auto' }}>
                         <div className="admin-card" style={{ padding: '2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -1239,7 +1239,7 @@ const AdminDashboard = () => {
                                     <input
                                         type="password"
                                         className="input-field"
-                                        placeholder="••••••••"
+                                        placeholder="********"
                                         value={pwdData.currentPassword}
                                         onChange={e => setPwdData(p => ({ ...p, currentPassword: e.target.value }))}
                                         required
@@ -1253,7 +1253,7 @@ const AdminDashboard = () => {
                                         <input
                                             type="password"
                                             className="input-field"
-                                            placeholder="••••••••"
+                                            placeholder="********"
                                             value={pwdData.newPassword}
                                             onChange={e => setPwdData(p => ({ ...p, newPassword: e.target.value }))}
                                             required
@@ -1265,7 +1265,7 @@ const AdminDashboard = () => {
                                         <input
                                             type="password"
                                             className="input-field"
-                                            placeholder="••••••••"
+                                            placeholder="********"
                                             value={pwdData.confirmNewPassword}
                                             onChange={e => setPwdData(p => ({ ...p, confirmNewPassword: e.target.value }))}
                                             required

@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ── Reset ── */
+/* -- Reset -- */
 *,
 *::before,
 *::after {
@@ -53,7 +53,7 @@ img {
     display: block;
 }
 
-/* ───────────── Admin Login ───────────── */
+/* ------------- Admin Login ------------- */
 .admin-login-page {
     min-height: 100vh;
     display: flex;
@@ -296,7 +296,7 @@ img {
     }
 }
 
-/* ───────────── Admin Dashboard ───────────── */
+/* ------------- Admin Dashboard ------------- */
 .admin-dash-page {
     min-height: 100vh;
     background: var(--bg);
@@ -743,7 +743,7 @@ select.input-field option {
     animation: spin 0.8s linear infinite;
 }
 
-/* ── Toggle Switch ── */
+/* -- Toggle Switch -- */
 .switch {
     position: relative;
     display: inline-block;

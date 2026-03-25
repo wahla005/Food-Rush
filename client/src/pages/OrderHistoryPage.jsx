@@ -5,6 +5,7 @@ import API from '../api/axios';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 import { FiStar, FiX } from 'react-icons/fi';
+import { getImageUrl } from '../utils/image';
 
 const STATUS_COLORS = {
     Pending: '#f59e0b',
